@@ -21,10 +21,10 @@ import math
 #%%
 
 #nemo
-situation = 'Stroop'
+situation = 'Baseline2'
 
-length_s = 10
-index = 1
+length_s = 30
+index = 0
 
 fs = 250
 
@@ -32,6 +32,7 @@ clip_start = index*(length_s*fs)
 clip_end = (index+1)*(length_s*fs) 
 
 url = '/Users/weien/Desktop/ECG穿戴/HRV實驗/收案RawData/人體壓力測試/220510郭葦珊/'
+
 df=pd.read_csv(url+situation+'.csv').iloc[clip_start:clip_end] #petted.iloc[10000:17500] scared[2500:10000]
 ecg_dataraw = df[situation]
 
@@ -58,9 +59,9 @@ ecg_defivative = pantompkin.defivative(ecg_bandpass)       #導數
 ecg_square = np.square(ecg_defivative)       #平方
 # movingwindow= pantompkin.movingaverage(ecg_defivative)     #moving average
 peaks_x, peaks_y = pantompkin.findpeak(ecg_square)
-detedted_rpeak_x,detedted_rpeak_y = pantompkin.detectRpeak(ecg_dataraw, peaks_x, peaks_y)       #Pantompkin決策演算抓rpeak 資料來源：網路找的Github
+detedted_rpeak_x,detedted_rpeak_y = pantompkin.detectRpeak(rawdata_mV, peaks_x, peaks_y)       #Pantompkin決策演算抓rpeak 資料來源：網路找的Github
 
-newdetedted_rpeak_x, newdetedted_rpeak_y = pantompkin.ecgfindtheminvalue(ecg_dataraw, detedted_rpeak_x,rpeak_findmin_range) #找最小值
+newdetedted_rpeak_x, newdetedted_rpeak_y = pantompkin.ecgfindthemaxvalue(rawdata_mV, detedted_rpeak_x,rpeak_findmin_range) #找最小值
 
 rrinterval = np.diff(newdetedted_rpeak_x)
 rrinterval = rrinterval*1000/fs
@@ -95,7 +96,7 @@ print(situation+' Skewness: '+str(round(skew,2))+' Kurtosis: '+str(round(kurt,2)
 plt.figure(figsize=(16,12))
 plt.subplot(6,1,1)
 plt.plot(rawdata_mV)
-plt.plot(detedted_rpeak_x, detedted_rpeak_y, "o", markersize=3, c='red')
+plt.plot(newdetedted_rpeak_x, newdetedted_rpeak_y, "o", markersize=3, c='red')
 plt.title('Raw')
 
 plt.subplot(6,1,2)
@@ -131,8 +132,8 @@ plt.tight_layout()
 
 #%% EMG
 #取EMG
-emg_mV  = pantompkin.fillRTpeakwithLinear(ecg_dataraw,newdetedted_rpeak_x, qrs_range, tpeak_range) #刪除rtpeak並補線性點
-emg_mV_linearwithzero, emg_list = pantompkin.deleteRTpeak(ecg_dataraw,newdetedted_rpeak_x, qrs_range, tpeak_range) #刪除rtpeak並補0
+emg_mV  = pantompkin.fillRTpeakwithLinear(rawdata_mV,newdetedted_rpeak_x, qrs_range, tpeak_range) #刪除rtpeak並補線性點
+emg_mV_linearwithzero, emg_list = pantompkin.deleteRTpeak(rawdata_mV,newdetedted_rpeak_x, qrs_range, tpeak_range) #刪除rtpeak並補0
 emg_mV_withoutZero = pantompkin.deleteZero(emg_mV_linearwithzero) #
 
 
