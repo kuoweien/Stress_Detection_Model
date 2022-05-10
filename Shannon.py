@@ -31,19 +31,21 @@ import seaborn as sns
 #開啟檔案
 fs = 250
 magnification = 500 #LTA3放大倍率
-url = '/Users/weien/Desktop/人體壓力測試/220413小魚Stroop Test/yu_strooptest_stroop.csv'
+# url = '/Users/weien/Desktop/人體壓力測試/220413小魚Stroop Test/yu_strooptest_stroop.csv'
+url = '/Users/weien/Desktop/ECG穿戴/HRV實驗/收案RawData/人體壓力測試/220510郭葦珊/'
 # url = '/Users/weien/Desktop/人體壓力測試/220426陳云/Stroop+Radio.csv'
 # url = '/Users/weien/Desktop/狗狗穿戴/HRV實驗/Dataset/220421Jessica/Petted.csv'
 # situation = 'Stroop+Radio'
-situation = 'ECG'
+# situation = 'ECG'
+situation = 'Stroop'
+url_file = url+situation+'.csv'
 
-length_s = 10
-index = 2
+length_s = 30
+index = 1
 
-# clip_start = index*(length_s*250) #scared 2500 #petted 10000
-# clip_end = (index+1)*(length_s*250)  #scared 5000 #petted 12500
-clip_start = 2500
-clip_end = 5000
+clip_start = index*(length_s*fs) #scared 2500 #petted 10000
+clip_end = (index+1)*(length_s*fs)  #scared 5000 #petted 12500
+
 
 #抓rpeak相關參數
 highpass_fq = 10
@@ -54,12 +56,12 @@ median_filter_length = 61
 gaussian_filter_sigma =  0.03*fs #20
 moving_average_ms = 2.5 
 final_shift = 0 #Hibert轉換找到交零點後需位移回來 0.1*fs (int(0.05*fs))
-detectR_maxvalue_range = (0.4*fs)*2  #草哥使用(0.3*fs)*2
+detectR_maxvalue_range = (0.3*fs)*2  #草哥使用(0.3*fs)*2
 detectR_minvalue_range = (0.5*fs)*2 
 rpeak_close_range = 0.15*fs #0.1*fs
 
-qrs_range = 30 #計算EMG時，在detect rpeak向左刪除之距離 （狗使用25 人使用30）
-tpeak_range = 37 #計算EMG時，在detect rpeak向右刪除之距離 （狗使用37 人使用0）
+qrs_range = 80 #計算EMG時，在detect rpeak向左刪除之距離 （狗使用25 人使用30）
+tpeak_range = 0 #計算EMG時，在detect rpeak向右刪除之距離 （狗使用37 人使用0）
 
 #畫圖調的參數
 # hist_binvalue = [400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400] #for dog
@@ -68,7 +70,7 @@ hist_binvalue = [400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900] #for dog
 
 #%%取ECG Rpeak
 #主程式
-df=pd.read_csv(url).iloc[clip_start:clip_end]
+df=pd.read_csv(url_file).iloc[clip_start:clip_end]
 rawdata = df[situation].reset_index(drop = True)
 rawdata_mV = ((rawdata*(1.8/65535)-0.9)/magnification)*1000  #轉換為電壓
 lowpass_data = bandfilter.lowPassFilter(lowpass_fq, rawdata_mV)  #低通
@@ -250,13 +252,12 @@ plt.legend()
 
 
 #%% 畫EMG圖
-fig, ax = plt.subplots(3, 1, sharex=True, figsize=(12,8))
+fig, ax = plt.subplots(3, 1, sharex=True, figsize=(12,6))
 
-ax1 = plt.subplot(3,1,1) #RRinterval
+ax1 = plt.subplot(2,1,1) #RRinterval
 ax1.plot(time,rawdata_mV,'black')
 ax1.scatter(np.array(redetect_Rpeak_index)/250, rawdata_mV[redetect_Rpeak_index], alpha=0.5, c='r')
 plt.ylabel('ECG (mV)')
-# plt.title('Raw ECG')
 plt.ylim(-1,1.5)
 
 #取EMG
@@ -270,14 +271,14 @@ emg_rms = round(np.sqrt(np.mean(emg_mV_withoutZero**2)),2)
 print('EMG')
 print('RMS: {}'.format(emg_rms))
 
-ax2 = plt.subplot(3,1,2, sharex = ax1)
-ax2.plot(time,rry_interpolate,'black')
-plt.ylabel('RR(ms)')
-plt.title('RRinterval')
+# ax2 = plt.subplot(3,1,2, sharex = ax1)
+# ax2.plot(time,rry_interpolate,'black')
+# plt.ylabel('RR(ms)')
+# plt.title('RRinterval')
 
-ax3 = plt.subplot(3,1,3, sharex = ax1)
+ax2 = plt.subplot(2,1,2, sharex = ax1)
 for i in range(len(emg_list)):
-    ax3.plot((emg_list[i].index)/250, emg_list[i], c='black')
+    ax2.plot((emg_list[i].index)/250, emg_list[i], c='black')
 plt.ylabel('EMG (mV)')
 plt.title('EMG')
 plt.xlabel('Time (s)')

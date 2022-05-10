@@ -18,20 +18,22 @@ import def_getRpeak as getRpeak
 
 
 
-url = '/Users/weien/Desktop/人體壓力測試/220426陳云'
-filename = '220426b.241'
-situation = 'Stroop+Radio'
-# cliptime_start = '14:11:50'
-# cliptime_end = '14:16:00'
-cliptime_start = '14:25:00'
-cliptime_end = '14:30:00'
+url = '/Users/weien/Desktop/ECG穿戴/HRV實驗/收案RawData/人體壓力測試/220510郭葦珊'
+filename = '220510d.241'
+situation = 'Warm'
+
+cliptime_start = '17:08:42'
+cliptime_end = '17:09:02'
 
 outputurl = url+'/'+situation+'.csv'
 ecgrawdata_file1,ecgfq_file1,updatetime_file1 = decodeECGdata.openRawFile(url+'/'+filename)
 ecgdata = clipConditionRawdata.getConditionRawdata(cliptime_start, cliptime_end, ecgrawdata_file1, ecgfq_file1,updatetime_file1)
 df = pd.DataFrame({situation:ecgdata})
 # df.to_csv(outputurl)
-plt.plot(ecgdata, c='black')
+
+rawdata_mV = ((np.array(ecgdata)*(1.8/65535)-0.9)/500)*1000
+plt.figure(figsize=(16,3))
+plt.plot(rawdata_mV, c='black')
 
 
 '''
