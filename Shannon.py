@@ -33,12 +33,12 @@ import seaborn as sns
 fs = 250
 magnification = 500 #LTA3放大倍率
 # url = '/Users/weien/Desktop/人體壓力測試/220413小魚Stroop Test/yu_strooptest_stroop.csv'
-url = '/Users/weien/Desktop/ECG穿戴/HRV實驗/收案RawData/人體壓力測試/220510郭葦珊/'
+url = '/Users/weien/Desktop/ECG穿戴/HRV實驗/人體/Rawdata/220510郭葦珊/'
 # url = '/Users/weien/Desktop/人體壓力測試/220426陳云/Stroop+Radio.csv'
 # url = '/Users/weien/Desktop/狗狗穿戴/HRV實驗/Dataset/220421Jessica/Petted.csv'
 # situation = 'Stroop+Radio'
 # situation = 'ECG'
-situation = 'Baseline4'
+situation = 'Shake'
 url_file = url+situation+'.csv'
 
 length_s = 30

@@ -21,7 +21,7 @@ import math
 #%%
 
 #nemo
-situation = 'Baseline2'
+situation = 'Shake'
 
 length_s = 30
 index = 0
@@ -31,7 +31,7 @@ fs = 250
 clip_start = index*(length_s*fs) 
 clip_end = (index+1)*(length_s*fs) 
 
-url = '/Users/weien/Desktop/ECG穿戴/HRV實驗/收案RawData/人體壓力測試/220510郭葦珊/'
+url = '/Users/weien/Desktop/ECG穿戴/HRV實驗/人體/Rawdata/220510郭葦珊/'
 
 df=pd.read_csv(url+situation+'.csv').iloc[clip_start:clip_end] #petted.iloc[10000:17500] scared[2500:10000]
 ecg_dataraw = df[situation]

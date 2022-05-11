@@ -6,5 +6,5 @@ save_non_project_files = False
 
 [main]
 version = 0.2.0
-recent_files = ['Shannon.py', 'def_Shannon.py', 'PanTompkin.py', 'signal_noise.py', 'def_passFilter.py']
+recent_files = ['def_Shannon.py', 'def_pantompkin.py', 'Shannon.py', 'PanTompkin.py', 'ECG_TimeDomain.py']
 
