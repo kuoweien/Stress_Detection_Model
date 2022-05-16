@@ -16,7 +16,7 @@ import def_passFilter as bandfilter
 
 
 
-url = '/Users/weien/Desktop/狗狗穿戴/HRV實驗/Dataset/2110Nimo/scared.csv'
+url = '/Users/weien/Desktop/ECG穿戴/HRV實驗/狗/Dataset/2110Nimo/scared.csv'
 # url = '/Users/weien/Desktop/人體壓力測試/220426陳云/Stroop+Radio.csv'
 situation = 'scared'
 
@@ -68,7 +68,7 @@ for index in range(0,12):
     plt.subplot(6,2,index+1)
     plt.plot(rawdata_mV, color='black')
     plt.ylim(-1,1)
-    plt.title('SQIkur='+str(round(sqi_kur,3)))
+    plt.title('rmsSQI='+str(round(rmsSQI,3)))
     plt.tight_layout()
 
     

@@ -93,11 +93,14 @@ plt.xlabel('Time(s)')
 plt.tight_layout()
 '''
 
-#%%將每個情境做平均 ->一個情境一個點
-'''
-df = pd.read_excel('/Users/weien/Desktop/ECG穿戴/HRV實驗/人體/220510分析資料.xlsx')
+#%%將每個情境做平均 ->一個情境一個點 
+#現在是狗的參數
 
-situation_list = ['Baseline1', 'Stroop', 'Baseline2', 'Arithmetic', 'Baseline3', 'Speech', 'Baseline4']
+# df = pd.read_excel('/Users/weien/Desktop/ECG穿戴/HRV實驗/人體/220510分析資料.xlsx')
+df = pd.read_excel('/Users/weien/Desktop/ECG穿戴/HRV實驗/狗/Dataset/220421Jessica/measureHRV.xlsx')
+# situation_list = ['Baseline', 'Stroop', 'Baseline', 'Arithmetic', 'Baseline', 'Speech', 'Baseline']
+situation_list = ['Baseline3', 'Petted', 'Scared']
+
 mean =[]
 sd = []
 rmssd = []
@@ -129,15 +132,15 @@ for i in range(len(situation_list)):
     EMG_RMS.append(EMG_RMS_mean)
     
 
-time = np.linspace(0, 120*7, 7)
-x_ticks = ['Baseline', 'Stroop', 'Baseline', 'Arithmetic', 'Baseline', 'Speech', 'Baseline']
+time = np.linspace(0, 21*30, 3)
+# x_ticks = ['Baseline', 'Stroop', 'Baseline', 'Arithmetic', 'Baseline', 'Speech', 'Baseline']
+x_ticks= ['Baseline', 'Petted', 'Scared']
 
-
-ylabel_xlocation = -0.07
+ylabel_xlocation = -0.2
 ylabel_ylocation = 0.5
 
 # plt.figure(figsize=(16,14))
-fig, ax = plt.subplots(3, 1, sharex=True, figsize=(8,8))  
+fig, ax = plt.subplots(3, 1, sharex=True, figsize=(6,8))  
 
 ax1 = plt.subplot(8,1,1)
 ax1.plot(time, mean, c='black', marker = '.')
@@ -148,49 +151,56 @@ plt.xticks(time, x_ticks)
 
 ax2 = plt.subplot(8,1,2)
 ax2.plot(time, sd, c='black', marker = '.')
-ax2.set_ylim(0,100)
+# ax2.set_ylim(0,200) #人
+ax2.set_ylim(0,200) #Jessica
 ax2.set_ylabel('SD')
 ax2.get_yaxis().set_label_coords(ylabel_xlocation, ylabel_ylocation)
 plt.xticks(time, x_ticks)
 
 ax3 = plt.subplot(8,1,3)
 ax3.plot(time, rmssd, c='black', marker = '.')
-ax3.set_ylim(0,100)
+# ax3.set_ylim(0,200) #人
+ax3.set_ylim(100,300) # jessica
 ax3.set_ylabel('RMSSD')
 ax3.get_yaxis().set_label_coords(ylabel_xlocation, ylabel_ylocation)
 plt.xticks(time, x_ticks)
 
 ax4 = plt.subplot(8,1,4)
 ax4.plot(time, skewness, c='black', marker = '.')
-ax4.set_ylim(-5,5)
+# ax4.set_ylim(-1,1) #人
+ax4.set_ylim(-5,20) #Jessica
 ax4.set_ylabel('Skew')
 ax4.get_yaxis().set_label_coords(ylabel_xlocation, ylabel_ylocation)
 plt.xticks(time, x_ticks)
 
 ax5 = plt.subplot(8,1,5)
 ax5.plot(time, kurtosis, c='black', marker = '.')
-ax5.set_ylim(-25,25)
+# ax5.set_ylim(0,20) #人
+ax5.set_ylim(0,10) #Jessica
 ax5.set_ylabel('Kurt')
 ax5.get_yaxis().set_label_coords(ylabel_xlocation, ylabel_ylocation)
 plt.xticks(time, x_ticks)
 
 ax6 = plt.subplot(8,1,6)
 ax6.plot(time, nn50, c='black', marker = '.')
-ax6.set_ylim(0,20)
+# ax6.set_ylim(0,20) #people
+ax6.set_ylim(0,50) #Jessica
 ax6.set_ylabel('NN50')
 ax6.get_yaxis().set_label_coords(ylabel_xlocation, ylabel_ylocation)
 plt.xticks(time, x_ticks)
 
 ax7 = plt.subplot(8,1,7)
 ax7.plot(time, pnn50, c='black', marker = '.')
-ax7.set_ylim(0,0.5)
+# ax7.set_ylim(-0.5,0.5) #people
+ax7.set_ylim(0,1) #Jessica
 ax7.set_ylabel('pNN50')
 ax7.get_yaxis().set_label_coords(ylabel_xlocation, ylabel_ylocation)
 plt.xticks(time, x_ticks)
 
 ax8 = plt.subplot(8,1,8)
 ax8.plot(time, EMG_RMS, c='black', marker = '.')
-ax8.set_ylim(0,0.1)
+# ax8.set_ylim(0,0.2) #people
+ax8.set_ylim(0.0,0.2) #Jessica
 ax8.set_ylabel('EMG-RMS')
 ax8.get_yaxis().set_label_coords(ylabel_xlocation,0.5)
 
@@ -200,7 +210,7 @@ plt.xticks(time, x_ticks)
 
 plt.tight_layout()
 
-'''
+
 
 #%% 前後相減
 
@@ -291,7 +301,7 @@ plt.tight_layout()
 '''
 
 #%% 單執行一個情境
-
+'''
 df = pd.read_excel('/Users/weien/Desktop/ECG穿戴/HRV實驗/人體/220510分析資料.xlsx')
 
 situation = 'Shake'
@@ -389,7 +399,7 @@ plt.xlabel('Time(s)')
 
 
 plt.tight_layout()
-
+'''
 
 
 

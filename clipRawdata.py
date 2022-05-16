@@ -19,22 +19,25 @@ import def_getRpeak as getRpeak
 
 
 url = '/Users/weien/Desktop/ECG穿戴/HRV實驗/人體/Rawdata/220510郭葦珊'
-filename = '220510d.241'
+filename = '220516B.RAW'
 situation = 'Shake'
 
 cliptime_start = '17:12:12'
 cliptime_end = '17:14:52'
 
 outputurl = url+'/'+situation+'.csv'
-ecgrawdata_file1,ecgfq_file1,updatetime_file1 = decodeECGdata.openRawFile(url+'/'+filename)
-ecgdata = clipConditionRawdata.getConditionRawdata(cliptime_start, cliptime_end, ecgrawdata_file1, ecgfq_file1,updatetime_file1)
+ecgrawdata_file1,ecgfq_file1,updatetime_file1 = decodeECGdata.openRawFile(url+'/'+filename) #minus_V = -0.9
+ecgdata = decodeECGdata.get_data_complement(ecgrawdata_file1) #如需執行此行，rawdata換算成mV時則不須-0.9 minus_V = 0
+minus_V = 0
+
+# ecgdata = clipConditionRawdata.getConditionRawdata(cliptime_start, cliptime_end, ecgrawdata_file1, ecgfq_file1,updatetime_file1)
 df = pd.DataFrame({situation:ecgdata})
 # df.to_csv(outputurl)
 
-rawdata_mV = ((np.array(ecgdata)*(1.8/65535)-0.9)/500)*1000
+rawdata_mV = ((np.array(ecgdata)*(1.8/65535)-minus_V)/500)*1000
 plt.figure(figsize=(16,3))
-plt.plot(rawdata_mV, c='black')
-plt.ylim(-0.2,0.5)
+plt.plot(ecgdata, c='black')
+# plt.ylim(-0.2,0.5)
 
 
 '''

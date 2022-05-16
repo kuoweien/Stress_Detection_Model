@@ -33,15 +33,15 @@ import seaborn as sns
 fs = 250
 magnification = 500 #LTA3放大倍率
 # url = '/Users/weien/Desktop/人體壓力測試/220413小魚Stroop Test/yu_strooptest_stroop.csv'
-url = '/Users/weien/Desktop/ECG穿戴/HRV實驗/人體/Rawdata/220510郭葦珊/'
-# url = '/Users/weien/Desktop/人體壓力測試/220426陳云/Stroop+Radio.csv'
-# url = '/Users/weien/Desktop/狗狗穿戴/HRV實驗/Dataset/220421Jessica/Petted.csv'
+# url = '/Users/weien/Desktop/ECG穿戴/HRV實驗/人體/Rawdata/220510郭葦珊/'
+# url = '/Users/weien/Desktop/ECG穿戴/HRV實驗/狗/Dataset/220421Jessica/'
+url = '/Users/weien/Desktop/ECG穿戴/HRV實驗/狗/Dataset/2110Nimo/'
 # situation = 'Stroop+Radio'
 # situation = 'ECG'
-situation = 'Shake'
+situation = 'scared'
 url_file = url+situation+'.csv'
 
-length_s = 30
+length_s = 10
 index = 0
 
 
@@ -75,7 +75,7 @@ hist_binvalue = [400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900] #for dog
 
 df_parameter = pd.DataFrame()
 
-for index in range(0,4):
+for index in range(0,12):
     
     clip_start = (index*(length_s*fs)) #scared 2500 #petted 10000
     clip_end = ((index+1)*(length_s*fs)) #scared 5000 #petted 12500
@@ -128,7 +128,6 @@ for index in range(0,4):
     newdetedted_rpeak_x, newdetedted_rpeak_y = pantompkin.ecgfindthemaxvalue(rawdata_mV, detedted_rpeak_x, detectR_maxvalue_range) #找最小值
 
     
-    
     #以下計算時所使用之參數
     redetect_Rpeak_index =[]
     redetect_Rpeak_index = newdetedted_rpeak_x #改Rpeak要哪個決策法
@@ -160,6 +159,13 @@ for index in range(0,4):
     rr_pnn50 = round(pnn50_rrinterval, 3)
     rr_skew = round(skew, 4)
     rr_kurt = round(kurt, 4)
+    
+    # plt.subplot(6,2,index+1)
+    # plt.plot(time, rawdata_mV, color='black')
+    # plt.scatter(np.array(redetect_Rpeak_index)/250, rawdata_mV[redetect_Rpeak_index], alpha=0.5, c='r')
+    # plt.ylim(-2,2)
+    # # plt.title('rmsSQI='+str(round(rmsSQI,3)))
+    # plt.tight_layout()
 
     
     
@@ -202,12 +208,12 @@ for index in range(0,4):
     plt.ylim(-1,1.5)
     
     plt.tight_layout()
-    plt.savefig(url+situation+'_'+str(index)+'.png',dpi=300)
+    # plt.savefig(url+situation+'_'+str(index)+'.png',dpi=300)
     
     print(str(index))
     
     df_parameter = df_parameter.append({'Mean':rr_mean , 'SD':rr_sd, 'RMSSD':rr_rmssd, 'NN50':rr_nn50, 'pNN50':rr_pnn50, 'Skewness':rr_skew, 'Kurtosis':rr_kurt , 'EMG_RMS':emg_rms, 'Situation':situation} ,ignore_index=True)
-    df_parameter.to_excel(url+situation+'.xlsx')                                   
+    # df_parameter.to_excel(url+situation+'.xlsx')                                   
 
     
     
