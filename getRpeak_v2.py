@@ -12,6 +12,7 @@ import numpy as np
 from io import BytesIO
 import base64
 
+#先前學長寫的
 
 class ECG_morphology_analysis:
     # def R_peak(self,start,inverse_end, f_ECG):

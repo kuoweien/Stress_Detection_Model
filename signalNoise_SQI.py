@@ -14,7 +14,7 @@ import def_passFilter as passFilter
 import seaborn as sns
 import def_passFilter as bandfilter
 
-
+#計算skewness kurtosis等SQI
 
 url = '/Users/weien/Desktop/ECG穿戴/HRV實驗/狗/Dataset/2110Nimo/scared.csv'
 # url = '/Users/weien/Desktop/人體壓力測試/220426陳云/Stroop+Radio.csv'
@@ -51,8 +51,7 @@ for index in range(0,12):
     print(round(noise_rms,3))
     print(round(rmsSQI,3))
     print('')
-    
-    
+       
     #Signal Quality Indices
     y = rawdata_mV  
     mean = np.mean(y)
@@ -63,7 +62,6 @@ for index in range(0,12):
     sqi_skew = np.sum(((y-mean)/std)**3)/n
     sqi_snr = 10*math.log10(sqi_snr)
     sqi_kur = np.sum(((y-mean)/std)**4)/n
-        
     
     plt.subplot(6,2,index+1)
     plt.plot(rawdata_mV, color='black')
@@ -71,7 +69,6 @@ for index in range(0,12):
     plt.title('rmsSQI='+str(round(rmsSQI,3)))
     plt.tight_layout()
 
-    
     
 
 plt.figure(figsize=(12,8))
@@ -125,5 +122,24 @@ print('sqi_kur: {}'.format(round(sqi_kur,3)))
 # plt.ylim(0,200)
 # plt.legend()
 
+#%%noise-measure SQI
+
+#方法二
+
+'''
+temp_data = bandfilter.lowPassFilter(30, rawdata_mV)  #低通
+signal = bandfilter.highPassFilter(5, temp_data)    #高通
+# signal = normalize_data
+noise = (rawdata_mV - signal)
+
+plt.figure(figsize=(12,8))
+plt.subplot(2,1,1)
+plt.plot(signal, color='black')
+
+plt.subplot(2,1,2)
+plt.plot(noise, color='black')
+
+plt.title('Measure Noise')
+'''  
 
 

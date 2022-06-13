@@ -20,6 +20,8 @@ from scipy.signal import hilbert, chirp
 from scipy import signal
 from scipy.interpolate import interp1d
 import seaborn as sns
+import def_measureRPeak_Point as measureRPeak
+from sklearn import preprocessing
 
 #Note 2022.4.15 from草哥
 #10-20HZ（人的）, rat的到30, 強化QRS後再取shannon
@@ -32,14 +34,13 @@ import seaborn as sns
 #開啟檔案
 fs = 250
 magnification = 500 #LTA3放大倍率
-# url = '/Users/weien/Desktop/人體壓力測試/220413小魚Stroop Test/yu_strooptest_stroop.csv'
-# url = '/Users/weien/Desktop/ECG穿戴/HRV實驗/人體/Rawdata/220510郭葦珊/'
-# url = '/Users/weien/Desktop/ECG穿戴/HRV實驗/狗/Dataset/220421Jessica/'
-url = '/Users/weien/Desktop/ECG穿戴/HRV實驗/狗/Dataset/2110Nimo/'
-# situation = 'Stroop+Radio'
-# situation = 'ECG'
-situation = 'scared'
-url_file = url+situation+'.csv'
+
+url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/Dataset/Rawdata/220510-1郭葦珊/LTA3'
+
+file = '211014Nimo'
+
+situation = 'Stroop'
+url_file = url+'/'+situation+'.csv'
 
 length_s = 10
 index = 0
@@ -74,16 +75,20 @@ hist_binvalue = [400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900] #for dog
 #主程式
 
 df_parameter = pd.DataFrame()
+df_rrresult = pd.DataFrame()
 
-for index in range(0,12):
+for index in range(5,6):
     
     clip_start = (index*(length_s*fs)) #scared 2500 #petted 10000
     clip_end = ((index+1)*(length_s*fs)) #scared 5000 #petted 12500
-
+    
     df=pd.read_csv(url_file).iloc[clip_start:clip_end]
     rawdata = df[situation].reset_index(drop = True)
     rawdata_mV = ((rawdata*(1.8/65535)-0.9)/magnification)*1000  #轉換為電壓
     
+
+    
+    '''
     #Shonnon抓Rpeak
     lowpass_data = bandfilter.lowPassFilter(lowpass_fq, rawdata_mV)  #低通
     bandfilter_data = bandfilter.highPassFilter(highpass_fq, lowpass_data)    #高通
@@ -115,10 +120,12 @@ for index in range(0,12):
     
     ecgbandfilter_minRpeak_index, _   = shannon.ecgfindtheminvalue(pd.Series(rawdata_bandfilter), zero_shift_index, detectR_minvalue_range)  # ECG 抓Rpeak 找範圍內的最小值
     re_ecgbandfilter_minRpeak_index = shannon.deleteCloseRpeak(ecgbandfilter_minRpeak_index, rpeak_close_range) #刪除rpeak間隔小於rpeak_close_range之值
+    '''
     
     #使用pantomskin抓Peak
     median_adjustline = pantompkin.medfilt(rawdata_mV.values,61) #sliding window折照為一半 120ms->61
     ecg_median = rawdata_mV-median_adjustline  #基線飄移
+    rawdata_mV = ecg_median
     ecg_lowpass=bandfilter.lowPassFilter(lowpass,ecg_median)        #低通
     ecg_bandpass = bandfilter.highPassFilter(highpass,ecg_lowpass)        #高通
     ecg_defivative = pantompkin.defivative(ecg_bandpass)       #導數
@@ -132,13 +139,36 @@ for index in range(0,12):
     redetect_Rpeak_index =[]
     redetect_Rpeak_index = newdetedted_rpeak_x #改Rpeak要哪個決策法
     
+    # 給Rpeak計算分數
+    rms_list = measureRPeak.measureRPoint(redetect_Rpeak_index, rawdata_mV)
+    rms_list_normalized = preprocessing.normalize([rms_list])
+    
     time = np.linspace(0, (clip_end-clip_start)/fs, clip_end-clip_start)
     
     #ECG相關參數計算
-    rrinterval = np.diff(redetect_Rpeak_index)
-    rrinterval = rrinterval*1000/fs    #轉為毫秒
+    rrinterval_raw = np.diff(redetect_Rpeak_index)
+    rrinterval_raw = rrinterval_raw*1000/fs    #轉為毫秒
+    mean_rrraw = np.mean(rrinterval_raw)
+    sd_rrraw = np.std(rrinterval_raw)
+    
+    outlier_upper = mean_rrraw+(3*sd_rrraw) 
+    outlier_lower = mean_rrraw-(3*sd_rrraw)
+    # rrinterval = rrinterval_raw[rrinterval_raw<outlier_upper]
+    # rrinterval = rrinterval[rrinterval>outlier_lower]  #刪除outlier的rrinterval
+    rrinterval = rrinterval_raw
+    
+    
+    epoch_time_str = str(int(clip_start/fs))+'-'+str(int(clip_end/fs))
+    length_rr = len(rrinterval)
+    df_rr = pd.DataFrame({ 'N': [file]*len(rrinterval), 'Situation': [situation]*len(rrinterval),'Time': [epoch_time_str]*len(rrinterval),'Time_index':index, 'RR':rrinterval})
+    df_rrresult = df_rrresult.append(df_rr)  
+    
+    
+    
     mean_rrinterval = np.mean(rrinterval)
     sd_rrinterval = np.std(rrinterval)
+    
+
     [niu, sigma, skew, kurt] = shannon.calc_stat(rrinterval) #峰值與偏度
     rmssd_rrinterval = math.sqrt(np.mean((np.diff(rrinterval)**2))) #RMSSD
     nn50_rrinterval = len(np.where(np.abs(np.diff(rrinterval))>50)[0]) #NN50 心跳間距超過50ms的個數，藉此評估交感
@@ -164,32 +194,34 @@ for index in range(0,12):
     # plt.plot(time, rawdata_mV, color='black')
     # plt.scatter(np.array(redetect_Rpeak_index)/250, rawdata_mV[redetect_Rpeak_index], alpha=0.5, c='r')
     # plt.ylim(-2,2)
-    # # plt.title('rmsSQI='+str(round(rmsSQI,3)))
     # plt.tight_layout()
+ 
+# df_rrresult.to_excel('/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/Dataset/分析資料/'+situation+'.xlsx')    
 
     
     
 #RR直方圖
 
-    sns.set_style("white")
-    plt.figure(figsize=(10,7), dpi= 80)
-    sns.histplot(rrinterval, alpha=0.6, linewidth=2, color='grey', kde=True, bins = hist_binvalue, label='RR Interval') #kde畫常態線
-    plt.title('{}: {}-{} (s)'.format(situation, int(clip_start/fs), int(clip_end/fs)))
-    plt.ylim(0,80)
-    plt.xlim(400,1200)
-    plt.grid(True)
-    plt.legend()
+    # sns.set_style("white")
+    # plt.figure(figsize=(10,7), dpi= 80)
+    # sns.histplot(rrinterval, alpha=0.6, linewidth=2, color='grey', kde=True, bins = hist_binvalue, label='RR Interval') #kde畫常態線
+    # plt.title('{}: {}-{} (s)'.format(situation, int(clip_start/fs), int(clip_end/fs)))
+    # plt.ylim(0,80)
+    # plt.xlim(400,1200)
+    # plt.grid(True)
+    # plt.legend()
     
-    plt.savefig(url+situation+'_'+str(index)+'_hist'+'.png',dpi=300)
+    # plt.savefig(url+situation+'_'+str(index)+'_hist'+'.png',dpi=300)
 
 # 畫EMG圖
+
     fig, ax = plt.subplots(3, 1, sharex=True, figsize=(12,6))    
     ax1 = plt.subplot(2,1,1) #RRinterval
     ax1.set_title('{}: {}-{} (s)'.format(situation, int(clip_start/fs), int(clip_end/fs)))
     ax1.plot(time,rawdata_mV,'black')
     ax1.scatter(np.array(redetect_Rpeak_index)/250, rawdata_mV[redetect_Rpeak_index], alpha=0.5, c='r')
     plt.ylabel('ECG (mV)')
-    plt.ylim(-1,1.5)
+    plt.ylim(-2, 2)
     
     #取EMG
     emg_mV  = shannon.fillRTpeakwithLinear(rawdata_mV,redetect_Rpeak_index, qrs_range, tpeak_range) #刪除rtpeak並補線性點
@@ -205,34 +237,19 @@ for index in range(0,12):
         ax2.plot((emg_list[i].index)/250, emg_list[i], c='black')
     plt.ylabel('EMG (mV)')
     plt.xlabel('Time (s)')
-    plt.ylim(-1,1.5)
+    plt.ylim(-0.1, 0.1)
     
     plt.tight_layout()
     # plt.savefig(url+situation+'_'+str(index)+'.png',dpi=300)
     
     print(str(index))
     
-    df_parameter = df_parameter.append({'Mean':rr_mean , 'SD':rr_sd, 'RMSSD':rr_rmssd, 'NN50':rr_nn50, 'pNN50':rr_pnn50, 'Skewness':rr_skew, 'Kurtosis':rr_kurt , 'EMG_RMS':emg_rms, 'Situation':situation} ,ignore_index=True)
+    # df_parameter = df_parameter.append({'Mean':rr_mean , 'SD':rr_sd, 'RMSSD':rr_rmssd, 'NN50':rr_nn50, 'pNN50':rr_pnn50, 'Skewness':rr_skew, 'Kurtosis':rr_kurt , 'EMG_RMS':emg_rms, 'Situation':situation} ,ignore_index=True)
     # df_parameter.to_excel(url+situation+'.xlsx')                                   
 
     
     
-#%%noise-measure SQI
-'''
-temp_data = bandfilter.lowPassFilter(30, rawdata_mV)  #低通
-signal = bandfilter.highPassFilter(5, temp_data)    #高通
-# signal = normalize_data
-noise = (rawdata_mV - signal)
 
-plt.figure(figsize=(12,8))
-plt.subplot(2,1,1)
-plt.plot(signal, color='black')
-
-plt.subplot(2,1,2)
-plt.plot(noise, color='black')
-
-plt.title('Measure Noise')
-'''  
 
 #%%畫圖 Shannon Algo過程
 '''

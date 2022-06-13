@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from PyEMD import EEMD
 import time
 # from scipy import signal
-from sklearn.decomposition import FastICA, PCA
+from sklearn.decomposition import FastICA
 import defgetRpeak as getRpeak
 
 

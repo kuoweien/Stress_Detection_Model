@@ -6,5 +6,5 @@ save_non_project_files = False
 
 [main]
 version = 0.2.0
-recent_files = ['Shannon.py', 'PanTompkin.py', 'ECG_TimeDomain.py', 'clipRawdata.py', 'signal_noise.py']
+recent_files = ['def_Shannon.py', 'signalNoise_rpeakPoint.py', 'def_passFilter.py', 'def_measureRPeak_Point.py', 'getRpeak_Shannon.py', 'getRPeak_PanTompkin.py']
 

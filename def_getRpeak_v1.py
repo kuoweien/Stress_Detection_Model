@@ -6,6 +6,7 @@ Created on Wed Oct 27 18:10:34 2021
 @author: weien
 """
 
+'''紹芬的getRpeak程式'''
 # import statistics
 # import dogHRV
 # import tkinter as tk  

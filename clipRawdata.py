@@ -15,31 +15,77 @@ import def_decodeECGdata as decodeECGdata
 import def_clipConditionRawdata as clipConditionRawdata
 import def_passFilter
 import def_getRpeak as getRpeak
+import def_Shannon as shannon
+
+def readRawdata(url, filename, cliptime_start_str, cliptime_end_str): #不需要補數 #若不需要切時間點，則cliptime_start_str='', cliptime_end_str=''
+    
+    ecg_rawdata, ecg_fq, updatetime = decodeECGdata.openRawFile(url+'/'+filename) #minus_V = -0.9
+    if len(cliptime_start_str) != 0 and len(cliptime_end_str) != 0:
+        ecg_rawdata = clipConditionRawdata.getConditionRawdata(cliptime_start_str, cliptime_end_str, ecg_rawdata, ecg_fq, updatetime)
+    # ecg_rawdata=np.array(ecg_rawdata)-32767
+    # ecg_rawdata = ((np.array(ecg_rawdata)*(1.8/65535)-0.9)/250)*1000  #轉換為電壓
+    
+    return ecg_rawdata, ecg_fq, updatetime
+
+def readComplementRawdata(url, filename, cliptime_start_str, cliptime_end_str): #需要對Rawdata做補數 (硬體的關係) #若沒有要切時間點，則cliptime_start_str='', cliptime_end_str=''
+    
+    ecg_rawdata, ecg_fq, updatetime = decodeECGdata.openRawFile(url+'/'+filename) #minus_V = -0.9
+    if len(cliptime_start_str) != 0 and len(cliptime_end_str) != 0:
+        ecg_rawdata = clipConditionRawdata.getConditionRawdata(cliptime_start_str, cliptime_end_str, ecg_rawdata, ecg_fq, updatetime)
+    ecg_rawdata = decodeECGdata.get_data_complement(ecg_rawdata) 
+    # ecg_rawdata = ((np.array(ecg_rawdata)*(1.8/65535)-0.0)/120)*1000  #轉換為電壓
+
+    return ecg_rawdata, ecg_fq, updatetime
+
+def outputDatatoCSV(column_name, data, outputurl):
+    df = pd.DataFrame({column_name: data})
+    df.to_csv(outputurl)
+    
+def ecgEpochScore(ecg_rms):
+    rms = np.sqrt(np.mean(np.array(ecg)**2))
+    noise_score = ((ecg_rms-753.632)/(32767-753.632))*100
+    
+    return noise_score
+    
+    
+
+# url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/Dataset/Rawdata/220517-5夢源/LTA3/'
+
+# filename = '220607a.240'
+# filename = '220607A.RAW'
+# filename = '220517b.240'
+
+# url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/Dataset/Rawdata/所有PatchRawData'
+# filename = '220517A.RAW'
+
+# url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/Dataset/Rawdata/所有LTA3RawData'
+# filename = '220517b.240'
+
+# url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/Dataset/Rawdata/220517-5夢源/Patch'
+# filename = '220517A.RAW'
+
+url = '/Users/weien/Desktop/ECG穿戴/測試ECG/標準心電圖(不同R的mV)(PATCH)'
+filename = '220607B.RAW'
+
+
+cliptime_start = ''
+cliptime_end = ''
+ecg,fq,time = readComplementRawdata(url, filename, cliptime_start, cliptime_end)
+# ecg=ecg*-1
+ecg = ecg[100300:101300]
+
+plt.figure(figsize=(14,2))
+plt.plot(ecg,'black')
 
 
 
-url = '/Users/weien/Desktop/ECG穿戴/HRV實驗/人體/Rawdata/220510郭葦珊'
-filename = '220516B.RAW'
-situation = 'Shake'
-
-cliptime_start = '17:12:12'
-cliptime_end = '17:14:52'
-
-outputurl = url+'/'+situation+'.csv'
-ecgrawdata_file1,ecgfq_file1,updatetime_file1 = decodeECGdata.openRawFile(url+'/'+filename) #minus_V = -0.9
-ecgdata = decodeECGdata.get_data_complement(ecgrawdata_file1) #如需執行此行，rawdata換算成mV時則不須-0.9 minus_V = 0
-minus_V = 0
-
-# ecgdata = clipConditionRawdata.getConditionRawdata(cliptime_start, cliptime_end, ecgrawdata_file1, ecgfq_file1,updatetime_file1)
-df = pd.DataFrame({situation:ecgdata})
-# df.to_csv(outputurl)
-
-rawdata_mV = ((np.array(ecgdata)*(1.8/65535)-minus_V)/500)*1000
-plt.figure(figsize=(16,3))
-plt.plot(ecgdata, c='black')
-# plt.ylim(-0.2,0.5)
+df = pd.DataFrame({'ECG': ecg})
+df.to_csv('/Users/weien/Desktop/ECG穿戴/測試ECG/標準心電圖(不同R的mV)(PATCH)/cleanECG_r=0.3mV.csv')
 
 
+
+
+#%%
 '''
 baseline_1 = clipConditionRawdata.getConditionRawdata('16:41:14','16:54:00',ecgrawdata_file1,ecgfq_file1,updatetime_file1)
 stroop = clipConditionRawdata.getConditionRawdata('16:44:36','16:46:25',ecgrawdata_file1,ecgfq_file1,updatetime_file1)
