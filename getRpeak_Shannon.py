@@ -226,7 +226,7 @@ for index in range(5,6):
     #取EMG
     emg_mV  = shannon.fillRTpeakwithLinear(rawdata_mV,redetect_Rpeak_index, qrs_range, tpeak_range) #刪除rtpeak並補線性點
     emg_mV_linearwithzero, emg_list = shannon.deleteRTpeak(rawdata_mV,redetect_Rpeak_index, qrs_range, tpeak_range) #刪除rtpeak並補0
-    emg_mV_withoutZero = shannon.deleteZero(emg_mV_linearwithzero) #
+    emg_mV_withoutZero = shannon.deleteZero(emg_mV_linearwithzero) 
     
     #emg轉成mV 並取rms
     emg_rms = round(np.sqrt(np.mean(emg_mV_withoutZero**2)),4)

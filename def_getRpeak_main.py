@@ -18,7 +18,7 @@ Created on Fri Apr  8 10:56:54 2022
 4. Def for Decision Rules: 校正Rpeak的決策規則
 5. Def function for EMG Signal: 處理EMG訊號的Function
 6. Def function for Statistics: 統計參數相關的Function
-7. Main Function: 最主要的Function，會呼叫前面函式，來計算Rpeak的函式
+7. Main Function: 最主要的Function，會呼叫前面函式，來取得Rpeak的函式
 '''
 
 
@@ -79,14 +79,14 @@ def medfilt (x, k): #基線飄移 x是訊號 k是摺照大小
     return np.median (y, axis=1)  #做完之後還要再用原始訊號減此值
 
 #低通
-def lowPassFilter(fq,data):
-    b, a = signal.butter(8, (2*fq)/250, 'lowpass')   #濾除 fq HZ以上的頻率
+def lowPassFilter(fq,fs,data):
+    b, a = signal.butter(8, 2*fq/fs, 'lowpass')   #濾除 fq HZ以上的頻率
     data_lowfilter = signal.filtfilt(b, a, data) 
     return data_lowfilter
   
 #高通  
-def highPassFilter(fq,data):
-    b, a = signal.butter(8, (2*fq)/250, 'highpass') #濾除 fq HZ以下的頻率
+def highPassFilter(fq,fs,data):
+    b, a = signal.butter(8, 2*fq/fs, 'highpass') #濾除 fq HZ以下的頻率
     data_highfilter = signal.filtfilt(b, a, data)
     return data_highfilter
 
@@ -364,7 +364,7 @@ def fillRTpeakwithLinear(rawdata, rpeakindex, qrs_range, tpeak_range): #原始�
     return emgwithlinear     # Output已刪除rt波的圖EMG, 有線性補點之值
 
 #取得EMG: 刪除RT波，並不補點
-def deleteRTpeak(rawdata, rpeakindex, qrs_range, tpeak_range): #與def fillRTpeakwithLinear相同 可以放在一起寫（要再修）
+def deleteRTpeak(rawdata, rpeakindex, qrs_range, tpeak_range): #與def fillRTpeakwithLinear相同 可以放在一起寫（要再修） #qrs_range, tpeak_range須為int
     emg_nolinear = rawdata
     
     sliplist_emg = []
@@ -377,11 +377,11 @@ def deleteRTpeak(rawdata, rpeakindex, qrs_range, tpeak_range): #與def fillRTpea
     for i in range(len(rpeakindex)):
         
         rpeak_index=rpeakindex[i]
-        if rpeak_index<pre_range:
+        if rpeak_index<pre_range:  #若要刪除的位置小於Rpeak的位置，則以第一點為起始
             startX=0
             startY=emg_nolinear[0]
         
-        elif rpeak_index>=pre_range: 
+        elif rpeak_index>=pre_range: #若pre_range沒有小於rpeak位置，則直接刪減
             startX=rpeak_index-pre_range
             startY=emg_nolinear[rpeak_index-pre_range]
             
@@ -450,14 +450,14 @@ def calc_stat(data):
 
 #%% 
 
-'''------------7. Main Function------------'''
+'''-------7.  Main Function--Get R peak------------'''
 #使用pantomskin取Peak
 def getRpeak_pantompskin(ecg ,fs, medianfilter_size, lowpass_fq, highpass_fq):
     median_adjustline = medfilt(np.array(ecg), medianfilter_size) #sliding window折照為一半 120ms->61
     ecg_median = ecg-median_adjustline  #基線飄移
     rawdata_mV = ecg_median
-    ecg_lowpass = lowPassFilter(lowpass_fq,ecg_median)        #低通
-    ecg_bandpass = highPassFilter(highpass_fq,ecg_lowpass)        #高通
+    ecg_lowpass = lowPassFilter(lowpass_fq,fs,ecg_median)        #低通
+    ecg_bandpass = highPassFilter(highpass_fq,fs,ecg_lowpass)        #高通
     ecg_defivative = defivative(ecg_bandpass)       #導數
     ecg_square = np.square(ecg_defivative)       #平方
     peaks_x, peaks_y = findpeak(ecg_square)
@@ -470,8 +470,8 @@ def getRpeak_pantompskin(ecg ,fs, medianfilter_size, lowpass_fq, highpass_fq):
 def getRpeak_shannon(ecg, fs, medianfilter_size, gaussian_filter_sigma, moving_average_ms, final_shift ,detectR_maxvalue_range,rpeak_close_range):
     median_filter_data = medfilt(np.array(ecg), medianfilter_size)
     median_ecg = ecg-median_filter_data
-    lowpass_data = lowPassFilter(20, median_ecg)  #低通
-    bandfilter_data = highPassFilter(10, lowpass_data)    #高通
+    lowpass_data = lowPassFilter(20,fs,median_ecg)  #低通
+    bandfilter_data = highPassFilter(10,fs,lowpass_data)    #高通
     dy_data = defivative(bandfilter_data) #一程微分
     normalize_data = dy_data/np.max(dy_data) #正規化
     see_data = (-1)*(normalize_data**2)*np.log((normalize_data**2)) #Shannon envelop
@@ -488,8 +488,30 @@ def getRpeak_shannon(ecg, fs, medianfilter_size, gaussian_filter_sigma, moving_a
     #Decision Rule: input分為三種 1.以RawECG找最大值 2.bandfilterECG找最大值 3.RawECG找最小值
     detect_Rpeak_index, _   = ecgfindthemaxvalue(median_ecg, zero_shift_index, detectR_maxvalue_range)  # RawECG抓R peak 找範圍內的最大值 
     re_detect_Rpeak_index = deleteCloseRpeak(detect_Rpeak_index, rpeak_close_range) #刪除rpeak間隔小於rpeak_close_range之值
-    # re_detect_Rpeak_index = shannon.deleteLowerRpeak(re_detect_Rpeak_index, ecg, 2000)
+    re_detect_Rpeak_index = deleteLowerRpeak(re_detect_Rpeak_index, ecg, 0.001)
 
     return median_ecg, re_detect_Rpeak_index
 
-#取得EMG
+#%%
+'''-------8. Def function for RRI------------'''
+# 將因雜訊刪除的RRI進行補點
+def interpolate_rri(rawrrinterval, fs):
+    rrinterval_add = rawrrinterval
+    # 計算時需將先前因雜訊而刪除的地方做補點
+    i = 0
+    while i < len(rrinterval_add):
+    # for i in range(len(rrinterval)):
+        if rrinterval_add[i] >= 2*fs/(fs/1000) :    # 因為要把index值換算成ms
+            insert_distance = (rrinterval_add[i-1] + rrinterval_add[i+1])/2
+            n = int(rrinterval_add[i]/insert_distance)
+            add_list = [insert_distance] * n
+            rrinterval_add = np.append(np.append(rrinterval_add[:i], add_list), rrinterval_add[i+1:])
+            i+=n
+        i+=1
+        
+    return rrinterval_add
+
+
+
+
+
