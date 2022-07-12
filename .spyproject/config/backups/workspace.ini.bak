@@ -6,5 +6,5 @@ save_non_project_files = False
 
 [main]
 version = 0.2.0
-recent_files = ['getRpeak_v3_main.py', 'getRpeak_Shannon.py', 'Statistic.py', 'readandclip_Rawdata.py']
+recent_files = ['ratsMI.py', 'def_getRpeak_main.py', 'getRpeak_v3_main.py', 'SVR.py', 'readandclip_Rawdata.py', 'getRpeak_Shannon.py']
 

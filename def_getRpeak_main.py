@@ -259,29 +259,22 @@ def ecgfindtheminvalue(rawdata, rpeak_x, range_n): #因前面會抓錯 所以直
 def ecgfindthemaxvalue(rawdata, rpeak_x, range_n): #Decision rule找最大值(因前面會抓錯)在rpeak附近range_n點找最大值 input原始data, detected rpeak, 找尋最大值範圍
     newrpeak = pd.Series()
     rawdata = pd.Series(rawdata)
-    # newrpeak = []
     for i in range(len(rpeak_x)):
         if rpeak_x[i]-int(range_n/2)<0:
             range_list = rawdata[0:rpeak_x[i]+int(range_n/2)]
             
         elif rpeak_x[i]+int(range_n/2)>len(rawdata):
             range_list = rawdata[rpeak_x[i]-int(range_n/2):len(rawdata)]
+            
         else:  
             range_list = rawdata[rpeak_x[i]-int(range_n/2):rpeak_x[i]+int(range_n/2)]
         
-        # range_list = pd.Series(range_list)
-        min_location = range_list.nlargest(1) #Series取最小值 取最大值為nlargest 最小值為nsmallest
-        # temp_tuple = np.where(range_list == range_list.max())
-        # min_location = temp_tuple[0][0]
-        
+        min_location = range_list.nlargest(1) #Series取最小值 取最大值為nlargest 最小值為nsmallest    
         newrpeak = newrpeak.append(min_location)
-        # newrpeak.append(min_location)
 
     newdetedted_rpeak_x = newrpeak.index.values.tolist() 
     newdetedted_rpeak_y = newrpeak.tolist()
 
-    
-    # return newdetedted_rpeak_x, newdetedted_rpeak_y
     return newdetedted_rpeak_x, newdetedted_rpeak_y
 
 #校正Rpeak，刪除過於接近的Rpeak
@@ -387,12 +380,15 @@ def deleteRTpeak(rawdata, rpeakindex, qrs_range, tpeak_range): #與def fillRTpea
             
         endX=rpeak_index+after_range+tpeak_range
         
-        if len(emg_nolinear)<endX:
+        if len(emg_nolinear)<=endX:
             endX=len(emg_nolinear)
             endY=emg_nolinear[len(emg_nolinear)-1]
-        elif len(emg_nolinear)>=endX:
-            endX=endX
-            endY=emg_nolinear[rpeak_index+after_range+tpeak_range]
+        # if endX>len(rawdata):
+        #     endX = len(rawdata)
+        elif len(emg_nolinear)>endX:
+            # endX=endX
+            endY=emg_nolinear[endX]
+            
         
         linearOutput=linearFunc([startX,startY],[endX,endY]) #linearFunc.py引入 #共前後1秒
         firstindex=linearOutput[0][0]
@@ -469,16 +465,17 @@ def getRpeak_pantompskin(ecg ,fs, medianfilter_size, lowpass_fq, highpass_fq):
 #Shonnon取Rpeak
 def getRpeak_shannon(ecg, fs, medianfilter_size, gaussian_filter_sigma, moving_average_ms, final_shift ,detectR_maxvalue_range,rpeak_close_range):
     median_filter_data = medfilt(np.array(ecg), medianfilter_size)
+    # median_filter_data = medfilt(ecg, medianfilter_size)
     median_ecg = ecg-median_filter_data
     lowpass_data = lowPassFilter(20,fs,median_ecg)  #低通
     bandfilter_data = highPassFilter(10,fs,lowpass_data)    #高通
     dy_data = defivative(bandfilter_data) #一程微分
     normalize_data = dy_data/np.max(dy_data) #正規化
     see_data = (-1)*(normalize_data**2)*np.log((normalize_data**2)) #Shannon envelop
-    lmin_index, lmax_index = hl_envelopes_idx(see_data) #取上包絡線
-    lmax_data = see_data[lmax_index]
-    interpolate_data = interpolate(lmax_data,len(ecg))
-    gaussian_data = gaussian_filter(interpolate_data, sigma=gaussian_filter_sigma)
+    # lmin_index, lmax_index = hl_envelopes_idx(see_data) #取上包絡線
+    # lmax_data = see_data[lmax_index]
+    # interpolate_data = interpolate(lmax_data,len(ecg))
+    gaussian_data = gaussian_filter(see_data, sigma=gaussian_filter_sigma)
     hibert_data = np.imag(hilbert(gaussian_data))  #Hilbert取複數
     movingaverage_data = movingaverage(hibert_data, moving_average_ms, fs) #moving average
     hibertmoving_data = hibert_data-movingaverage_data
@@ -488,7 +485,7 @@ def getRpeak_shannon(ecg, fs, medianfilter_size, gaussian_filter_sigma, moving_a
     #Decision Rule: input分為三種 1.以RawECG找最大值 2.bandfilterECG找最大值 3.RawECG找最小值
     detect_Rpeak_index, _   = ecgfindthemaxvalue(median_ecg, zero_shift_index, detectR_maxvalue_range)  # RawECG抓R peak 找範圍內的最大值 
     re_detect_Rpeak_index = deleteCloseRpeak(detect_Rpeak_index, rpeak_close_range) #刪除rpeak間隔小於rpeak_close_range之值
-    re_detect_Rpeak_index = deleteLowerRpeak(re_detect_Rpeak_index, ecg, 0.001)
+    # re_detect_Rpeak_index = deleteLowerRpeak(re_detect_Rpeak_index, ecg, 0.001)
 
     return median_ecg, re_detect_Rpeak_index
 
@@ -510,8 +507,3 @@ def interpolate_rri(rawrrinterval, fs):
         i+=1
         
     return rrinterval_add
-
-
-
-
-
