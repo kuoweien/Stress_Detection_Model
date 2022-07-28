@@ -18,7 +18,7 @@ import math
 
 fs = 250
 
-checknoiseThreshold = 50 #2秒Epoch刪雜訊時的閾值 Patch=0.419 LTA3=2.210
+checknoiseThreshold = 20 #2秒Epoch刪雜訊時的閾值 Patch=0.419 LTA3=2.210
 
 rri_epoch = 30 # Epoch
 
@@ -38,8 +38,8 @@ lowpass_fq = 20
 highpass_fq = 10
 
 # EMG參數
-qrs_range = int(0.3*fs)    # Human: int(0.32*fs)
-tpeak_range = int(0.1*fs)   # Human: int(0.2*fs)
+qrs_range = int(0.32*fs)    # Human: int(0.32*fs)
+tpeak_range = int(0.2*fs)   # Human: int(0.2*fs)
 
 #%%讀取Data
 
@@ -47,11 +47,10 @@ tpeak_range = int(0.1*fs)   # Human: int(0.2*fs)
 columns = ['Baseline', 'Stroop', 'Baseline_after_stroop', 'Arithmetic', 'Baseline_after_Arithmetic', 'Speech', 'Baseline_after_Speech']
 # columns = [ 'Baseline', 'Touch', 'Baseline_after_touch', 'Scared', 'Baseline_after_Scared', 'Play', 'Baseline_after_Play', 'Seperate', 'Baseline_after_Seperate', 'Eat', 'Baseline_after_Eat']
 
-for n in range(2, 3):
-# n = 3
+for n in range(23, 25):
+    print('N:{}'.format(n))
     
     for j in range(0, len(columns)):
-    # for j in range(0, 1):
         situation = columns[j]
         #讀取之ECG csv檔
         # ecg_url = 'Data/N{}/{}.csv'.format(n,situation) 
@@ -59,6 +58,7 @@ for n in range(2, 3):
         df = pd.read_csv(ecg_url)
         ecg_raw = df['ECG']
         df_parameter = pd.DataFrame()
+        df_rrinterval = pd.DataFrame()
         
         
         for i in range(0, 10): 
@@ -160,9 +160,9 @@ for n in range(2, 3):
         # df_parameter.to_excel('/Users/weien/Desktop/ECG穿戴/實驗三_狗狗情緒/Dataset_Tidy/N{}/HRV.xlsx'.format(n))
         
         # 讀取已建立檔，並加入新資料
-        df_hrv = pd.read_excel('/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/HRV/LTA3/EMG.xlsx')
+        df_hrv = pd.read_excel('/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/HRV/LTA3/HRV原始Data/220714_HRV.xlsx')
         df_hrv = df_hrv.append(df_parameter,ignore_index=True)
-        df_hrv.to_excel('/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/HRV/LTA3/EMG.xlsx')
+        df_hrv.to_excel('/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/HRV/LTA3/HRV原始Data/220714_HRV.xlsx',index=False)
         
         
         

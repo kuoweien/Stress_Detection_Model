@@ -84,10 +84,9 @@ def pearson_corr(a_list, b_list):
 # Spearman
 
 #%% 
-'''-----------Main-------------(HRV EMG相關參數統計計算)'''
+'''-----------與Baseline相比 壓力情境是否有統計差異-------------(HRV EMG相關參數統計計算)'''
 
-
-# url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/HRV/LTA3/220706_ECG+EMG.xlsx'
+# url = 'Data/220714_HRV.xlsx'
 # df = pd.read_excel(url)
 
 # df_baseline = df[df['Situation'] == 'Baseline']
@@ -112,19 +111,19 @@ def pearson_corr(a_list, b_list):
 #         stress_mean_pvalue = checkisNormal(stess_mean)
         
 #         if  baseline_mean_pvalue>0.05 and stress_mean_pvalue>0.05:
-#             r, pvalue = t_test(deleteOutlier(baseline_mean), deleteOutlier(stess_mean))
+#             r, pvalue = paired_ttest(baseline_mean, stess_mean)
 #             print('Paired T Test')
             
 #         elif  baseline_mean_pvalue>0.05 and stress_mean_pvalue<=0.05:
-#             r, pvalue = mannwhitneyu_test(deleteOutlier(baseline_mean), stess_mean)
+#             r, pvalue = wilcoxon_signed_rank_test(baseline_mean, stess_mean)
 #             print('Wilcoxon Signed-Rank Test')
             
 #         elif  baseline_mean_pvalue<=0.05 and stress_mean_pvalue>0.05:
-#             r, pvalue = mannwhitneyu_test(baseline_mean, deleteOutlier(stess_mean))
+#             r, pvalue = wilcoxon_signed_rank_test(baseline_mean, stess_mean)
 #             print('Wilcoxon Signed-Rank Test')
             
 #         elif  baseline_mean_pvalue<=0.05 and stress_mean_pvalue<=0.05:
-#             r, pvalue = mannwhitneyu_test(baseline_mean, stess_mean)
+#             r, pvalue = wilcoxon_signed_rank_test(baseline_mean, stess_mean)
 #             print('Wilcoxon Signed-Rank Test')
             
         
@@ -132,8 +131,9 @@ def pearson_corr(a_list, b_list):
 #         print('-----')
       
    
-'''-----------Main-------------(問卷內容統計計算)'''
-# url = 'Data/Questionnaire.xlsx'
+'''-----------VAS內容統計差異-------------(問卷內容統計計算)'''
+
+# url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/問卷&流程資料/Questionnaire.xlsx'
 # df_vas = pd.read_excel(url)
 # baseline_vas = df_vas['Baseline_VAS (mm)']
 # stroop_vas = df_vas['Stroop test_VAS (mm)']
@@ -143,21 +143,28 @@ def pearson_corr(a_list, b_list):
 # columns = [stroop_vas, arithmetic_vas, speech_vas]
 # baseline_vas_pvalue = checkisNormal(baseline_vas)
 
+# # columns = [arithmetic_vas, speech_vas]
+# # stroop_vas_pvalue = checkisNormal(stroop_vas)
+# # baseline_vas_pvalue = stroop_vas_pvalue
+
+# # columns = [speech_vas]
+# # stroop_vas_pvalue = checkisNormal(arithmetic_vas)
+# # baseline_vas_pvalue = stroop_vas_pvalue
 
 # for i in columns:
 
 #     stress_vas_pvalue = checkisNormal(i)
     
 #     if  baseline_vas_pvalue>0.05 and stress_vas_pvalue>0.05:
-#         r, pvalue = paired_ttest(deleteOutlier(baseline_vas), deleteOutlier(i))
+#         r, pvalue = paired_ttest(baseline_vas, i)
 #         print('Paired T Test')
             
 #     elif  baseline_vas_pvalue>0.05 and stress_vas_pvalue<=0.05:
-#         r, pvalue = wilcoxon_signed_rank_test(deleteOutlier(baseline_vas), i)
+#         r, pvalue = wilcoxon_signed_rank_test(baseline_vas, i)
 #         print('Wilcoxon Signed-Rank Test')
             
 #     elif  baseline_vas_pvalue<=0.05 and stress_vas_pvalue>0.05:
-#         r, pvalue = wilcoxon_signed_rank_test(baseline_vas, deleteOutlier(i))
+#         r, pvalue = wilcoxon_signed_rank_test(baseline_vas, i)
 #         print('Wilcoxon Signed-Rank Test')
             
 #     elif  baseline_vas_pvalue<=0.05 and stress_vas_pvalue<=0.05:
@@ -166,21 +173,46 @@ def pearson_corr(a_list, b_list):
     
 #     print('P value={}'.format(pvalue))
 
-'''---------每人的HRV參數平均 (畫散佈圖用)-------'''
+'''------------基本資料計算------------------'''
+# df = pd.read_excel('/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/問卷&流程資料/基本資料&設備編號檔名.xlsx')
+# participants_age = df['Age']
+# age_mean = round(np.mean(participants_age),1)
+# age_std = round(np.std(participants_age),1)
 
-# df = pd.read_excel('/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/HRV/LTA3/220706_ECG+EMG.xlsx')
-# N = 13
+# df_quetionnaire = pd.read_excel('/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/問卷&流程資料/Questionnaire.xlsx')
+# baseline_VAS = df_quetionnaire['Baseline_VAS (mm)']
+# baseline_VAS_mean = round(np.mean(baseline_VAS),1)
+# baseline_VAS_std = round(np.std(baseline_VAS),1)
 
-# # columns = ['Mean','SD', 'RMSSD','NN50', 'pNN50','Skewness','Kurtosis', 'EMG_RMS'] # 計算的參數
-# columns = ['EMG_RMS', 'EMG_VAR', 'EMG_ZC', 'EMG_ENERGY', 'EMG_MAV']
+# stroop_VAS = df_quetionnaire['Stroop test_VAS (mm)']
+# stroop_VAS_mean = round(np.mean(stroop_VAS),1)
+# stroop_VAS_std = round(np.std(stroop_VAS),1)
+
+# arithmetic_VAS = df_quetionnaire['Arithmetic_VAS (mm)']
+# arithmetic_VAS_mean = round(np.mean(arithmetic_VAS),1)
+# arithmetic_VAS_std = round(np.std(arithmetic_VAS),1)
+
+# speech_VAS = df_quetionnaire['Speech_VAS (mm)']
+# speech_VAS_mean = round(np.mean(speech_VAS),1)
+# speech_VAS_std = round(np.std(speech_VAS),1)
+
+'''---------每人的HRV參數平均 -------'''
+#要先建立空的excel檔，先定好欄位名
+
+# df = pd.read_excel('Data/220714_HRV.xlsx')
+# total_N = 24
+
+# columns = ['Mean','SD', 'RMSSD','NN50', 'pNN50','Skewness','Kurtosis', 'EMG_RMS','EMG_RMS', 'EMG_ENERGY', 'EMG_MAV', 'EMG_VAR', 'EMG_ZC']
 # stress = ['Baseline', 'Stroop', 'Arithmetic', 'Speech']
 
 
 # df_person_siation_mean = pd.DataFrame()
-# df_siation_mean = pd.DataFrame()
+
+# df_siation_mean = pd.read_excel('/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/HRV/LTA3/HRVMean_VAS/220716_HRVMean.xlsx')
+# # df_siation_mean = pd.DataFrame()
 # n_list = []
 
-# for n in range(2,(N+1)):
+# for n in range(2,(total_N+1)):
 #     df_a_person = df[df['N']==n]
 #     for i in stress:
 #         df_situation = df_a_person[df_a_person['Situation']==i]
@@ -188,33 +220,37 @@ def pearson_corr(a_list, b_list):
 #     n_list = n_list+[n]*4
 
 # df_siation_mean = df_siation_mean.append(df_person_siation_mean, ignore_index=True)
-# df_siation_mean['Situation'] = stress*(N-1)
+# df_siation_mean['Situation'] = stress*(total_N-1)
 # df_siation_mean['N'] = n_list
 
-# df_siation_mean.to_excel('EMG_Mean_a.xlsx')
+
+## df_siation_mean.to_excel('/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/HRV/LTA3/HRVMean_VAS/220716_HRVMean.xlsx')
 
 '''------------計算相關：HRV與VAS相關-------------'''
 
-df = pd.read_excel('/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/HRV/LTA3/EMG_Mean_a.xlsx')
+df = pd.read_excel('Data/220719_HRVMean.xlsx')
 df_output = pd.DataFrame()
-N = 13
+allN = 24
 
-for j in range(2, (N+1)):
+for j in range(2, (allN+1)):
+    if j == 7:
+        continue
+    
     df_N = df[df['N']==j]
     if len(df_N) == 0:
         continue
         
     vas_N = df_N['VAS']
     
-    # columns = ['Mean','SD', 'RMSSD','NN50', 'pNN50','Skewness','Kurtosis', 'EMG_RMS'] # 計算的參數
-    columns = ['EMG_RMS', 'EMG_VAR', 'EMG_ZC', 'EMG_ENERGY', 'EMG_MAV']
+    columns = ['Mean','SD', 'RMSSD','NN50', 'pNN50','Skewness','Kurtosis', 'EMG_RMS','EMG_RMS', 'EMG_ENERGY', 'EMG_MAV', 'EMG_VAR', 'EMG_ZC']
+
     
     for i in columns:
         hrv_N = df_N[i]
         r, p = pearson_corr(vas_N, hrv_N)
         df_output = df_output.append({'N': j, 'HRVPara': i, 'Corr_HRVandVAS': r }, ignore_index=True)
 
-df_output.to_excel('EMGandVAS_Corr.xlsx')
+df_output.to_excel('Data/HRVandVAS_Corr.xlsx')
 
 
 

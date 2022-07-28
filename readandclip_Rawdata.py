@@ -18,8 +18,13 @@ import datetime
 
 raw_url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/Rawdata/LTA3_Rawdata/'
 # filename = '12-220624A.RAW'
-filename = '16-220711a.240'
-n = 16 #受試者代碼
+filename = '28-220725.241'
+n = 28 #受試者代碼
+
+# 調整儀器與標準時間的差異 正值表示儀器較標準時間快
+adjusttime_hr = 0
+adjusttime_min = 0
+adjusttime_sec = 0
 
 rawfile_url = raw_url+filename #壓縮檔的url
 ecg_raw, fs, updatetime = def_readandget_Rawdata.openRawFile(rawfile_url) #解Raw檔
@@ -39,14 +44,9 @@ df_time = pd.read_excel(time_url)
 df_onedata = df_time[df_time['N']==n ]
 
 
-# 調整儀器與標準時間的差異 正值表示儀器較標準時間快
-adjusttime_hr = 0
-adjusttime_min = 0
-adjusttime_sec = 32
-
 
 # 人的
-columns = ['Baseline', 'Stroop', 'Baseline_after_stroop', 'Arithmetic', 'Baseline_after_Arithmetic', 'Speech', 'Baseline_after_speech']
+columns = ['Baseline', 'Stroop', 'Baseline_after_stroop', 'Arithmetic', 'Baseline_after_Arithmetic', 'Speech', 'Speech_3m', 'Baseline_after_speech']
 # 狗的
 # columns = ['Baseline', 'Touch', 'Baseline_after_touch', 'Scared', 'Baseline_after_Scared', 'Play', 'Baseline_after_Play', 'Seperate', 'Baseline_after_Seperate', 'Eat', 'Baseline_after_Eat']
 
@@ -78,6 +78,7 @@ for i in columns:
     plt.figure(figsize=(12,2))
     plt.plot(ecg_condition ,'black')
     plt.title(i)
+
 
 
 
