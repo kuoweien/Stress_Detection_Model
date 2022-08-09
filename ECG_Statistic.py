@@ -10,6 +10,7 @@ import numpy as np
 from scipy.stats import mannwhitneyu
 import pandas as pd
 import scipy.stats as stats
+import seaborn as sns
 
 #看是否常態
 def checkisNormal(value):
@@ -86,13 +87,14 @@ def pearson_corr(a_list, b_list):
 #%% 
 '''-----------與Baseline相比 壓力情境是否有統計差異-------------(HRV EMG相關參數統計計算)'''
 
-# url = 'Data/220714_HRV.xlsx'
+# url = 'Data/220801_Features.xlsx'
 # df = pd.read_excel(url)
 
 # df_baseline = df[df['Situation'] == 'Baseline']
 
 
-# parameter = ['Mean','SD', 'RMSSD','NN50', 'pNN50','Skewness','Kurtosis', 'EMG_RMS', 'EMG_VAR', 'EMG_ZC', 'EMG_ENERGY', 'EMG_MAV'] # 計算的參數
+# parameter = ['Mean','SD', 'RMSSD','NN50', 'pNN50','Skewness','Kurtosis', 'EMG_RMS', 'EMG_VAR', 'EMG_ZC', 'EMG_ENERGY', 'EMG_MAV',
+#               'TP', 'HF', 'LF', 'VLF', 'nLF', 'nHF', 'LF/HF', 'MNF', 'MDF'] # 計算的參數
 # for para in parameter:
 #     print('[{}]'.format(para))
        
@@ -129,8 +131,87 @@ def pearson_corr(a_list, b_list):
         
 #         print('p={}'.format(round(pvalue,3)))
 #         print('-----')
+#         print(' ')
       
    
+
+'''---------每人的HRV參數平均 -------'''
+
+# df = pd.read_excel('Data/220801_Features.xlsx')
+
+# last_N = 32
+
+# columns = ['Mean','SD', 'RMSSD','NN50', 'pNN50','Skewness','Kurtosis', 
+#             'EMG_RMS','EMG_RMS', 'EMG_ENERGY', 'EMG_MAV', 'EMG_VAR', 'EMG_ZC',
+#             'TP', 'HF', 'LF', 'VLF', 'nLF', 'nHF', 'LF/HF', 'MNF', 'MDF']
+
+# stress = ['Baseline', 'Stroop', 'Arithmetic', 'Speech']
+
+
+# df_person_siation_mean = pd.DataFrame()
+
+# df_station_mean = pd.DataFrame()
+
+# # df_siation_mean = pd.read_excel('/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/HRV/LTA3/HRVMean_VAS/220716_HRVMean.xlsx')
+# # df_siation_mean = pd.DataFrame()
+# n_list = []
+
+# for n in range(2,(last_N+1)):
+#     if n == 7:
+#         continue
+    
+#     df_a_person = df[df['N']==n]
+#     for i in stress:
+#         df_situation = df_a_person[df_a_person['Situation']==i]
+#         df_person_siation_mean = df_person_siation_mean.append(df_situation.mean(), ignore_index=True)
+#     n_list = n_list+[n]*4
+
+# df_station_mean = df_station_mean.append(df_person_siation_mean, ignore_index=True)
+# df_station_mean['Situation'] = stress*(total_N-2)
+# df_station_mean['N'] = n_list
+
+# df_station_mean = df_station_mean[['N', 'Situation', 'Mean','SD', 'RMSSD','NN50', 'pNN50','Skewness','Kurtosis', 
+#             'EMG_RMS','EMG_RMS', 'EMG_ENERGY', 'EMG_MAV', 'EMG_VAR', 'EMG_ZC',
+#             'TP', 'HF', 'LF', 'VLF', 'nLF', 'nHF', 'LF/HF', 'MNF', 'MDF']]
+
+
+# df_station_mean.to_excel('Data/220801_FeaturesMean.xlsx')
+
+'''------------計算相關：HRV與VAS相關-------------'''
+
+# df = pd.read_excel('Data/220801_FeaturesMean.xlsx')
+# df_output = pd.DataFrame()
+# last_N = 32
+
+# vas_url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/問卷&流程資料/Questionnaire.xlsx'
+# df_vas = pd.read_excel(vas_url, sheet_name = 'forAnalyze')
+# vas = df_vas['VAS_forAnalyze']
+
+# df['VAS'] = vas
+
+# for j in range(2, (last_N+1)):
+#     if j == 7:
+#         continue
+    
+#     df_N = df[df['N']==j]
+#     if len(df_N) == 0:
+#         continue
+        
+#     vas_N = df_N['VAS']
+    
+#     columns = ['Mean','SD', 'RMSSD','NN50', 'pNN50','Skewness','Kurtosis', 
+#             'EMG_RMS','EMG_RMS', 'EMG_ENERGY', 'EMG_MAV', 'EMG_VAR', 'EMG_ZC',
+#             'TP', 'HF', 'LF', 'VLF', 'nLF', 'nHF', 'LF/HF', 'MNF', 'MDF']
+    
+#     for i in columns:
+#         hrv_N = df_N[i]
+#         r, p = pearson_corr(vas_N, hrv_N)
+#         df_output = df_output.append({'N': j, 'HRVPara': i, 'Corr_HRVandVAS': r }, ignore_index=True)
+
+# df_output = df_output[['N', 'HRVPara', 'Corr_HRVandVAS']]
+
+# # df_output.to_excel('Data/220801_HRVandVAS_Corr.xlsx')
+
 '''-----------VAS內容統計差異-------------(問卷內容統計計算)'''
 
 # url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/問卷&流程資料/Questionnaire.xlsx'
@@ -178,79 +259,55 @@ def pearson_corr(a_list, b_list):
 # participants_age = df['Age']
 # age_mean = round(np.mean(participants_age),1)
 # age_std = round(np.std(participants_age),1)
+# print('Age Mean: {}, SD: {}'.format(age_mean, age_std))
+
+# participants_BMI = df['BMI']
+# bmi_mean = round(np.mean(participants_BMI),1)
+# bmi_std = round(np.std(participants_BMI),1)
+# print('BMI Mean: {}, SD: {}'.format(bmi_mean, bmi_std))
+
 
 # df_quetionnaire = pd.read_excel('/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/問卷&流程資料/Questionnaire.xlsx')
 # baseline_VAS = df_quetionnaire['Baseline_VAS (mm)']
 # baseline_VAS_mean = round(np.mean(baseline_VAS),1)
 # baseline_VAS_std = round(np.std(baseline_VAS),1)
+# print('baseline_VAS Mean: {}, SD: {}'.format(baseline_VAS_mean, baseline_VAS_std))
 
 # stroop_VAS = df_quetionnaire['Stroop test_VAS (mm)']
 # stroop_VAS_mean = round(np.mean(stroop_VAS),1)
 # stroop_VAS_std = round(np.std(stroop_VAS),1)
+# print('stroop_VAS Mean: {}, SD: {}'.format(stroop_VAS_mean, stroop_VAS_std))
 
 # arithmetic_VAS = df_quetionnaire['Arithmetic_VAS (mm)']
 # arithmetic_VAS_mean = round(np.mean(arithmetic_VAS),1)
 # arithmetic_VAS_std = round(np.std(arithmetic_VAS),1)
+# print('arithmetic_VAS Mean: {}, SD: {}'.format(arithmetic_VAS_mean, arithmetic_VAS_std))
 
 # speech_VAS = df_quetionnaire['Speech_VAS (mm)']
 # speech_VAS_mean = round(np.mean(speech_VAS),1)
 # speech_VAS_std = round(np.std(speech_VAS),1)
-
-'''---------每人的HRV參數平均 -------'''
-#要先建立空的excel檔，先定好欄位名
-
-# df = pd.read_excel('Data/220714_HRV.xlsx')
-# total_N = 24
-
-# columns = ['Mean','SD', 'RMSSD','NN50', 'pNN50','Skewness','Kurtosis', 'EMG_RMS','EMG_RMS', 'EMG_ENERGY', 'EMG_MAV', 'EMG_VAR', 'EMG_ZC']
-# stress = ['Baseline', 'Stroop', 'Arithmetic', 'Speech']
+# print('speech_VAS Mean: {}, SD: {}'.format(speech_VAS_mean, speech_VAS_std))
 
 
-# df_person_siation_mean = pd.DataFrame()
-
-# df_siation_mean = pd.read_excel('/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/HRV/LTA3/HRVMean_VAS/220716_HRVMean.xlsx')
-# # df_siation_mean = pd.DataFrame()
-# n_list = []
-
-# for n in range(2,(total_N+1)):
-#     df_a_person = df[df['N']==n]
-#     for i in stress:
-#         df_situation = df_a_person[df_a_person['Situation']==i]
-#         df_person_siation_mean = df_person_siation_mean.append(df_situation.mean(), ignore_index=True)
-#     n_list = n_list+[n]*4
-
-# df_siation_mean = df_siation_mean.append(df_person_siation_mean, ignore_index=True)
-# df_siation_mean['Situation'] = stress*(total_N-1)
-# df_siation_mean['N'] = n_list
+'''-------------特徵線性相關---------------'''
+df = pd.read_excel('Data/220801_Features.xlsx')
+df = df.iloc[:, 3:23]
+cormat = df.corr()
+round(cormat,2)
+sns.heatmap(cormat)
 
 
-## df_siation_mean.to_excel('/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/HRV/LTA3/HRVMean_VAS/220716_HRVMean.xlsx')
 
-'''------------計算相關：HRV與VAS相關-------------'''
 
-df = pd.read_excel('Data/220719_HRVMean.xlsx')
-df_output = pd.DataFrame()
-allN = 24
 
-for j in range(2, (allN+1)):
-    if j == 7:
-        continue
-    
-    df_N = df[df['N']==j]
-    if len(df_N) == 0:
-        continue
-        
-    vas_N = df_N['VAS']
-    
-    columns = ['Mean','SD', 'RMSSD','NN50', 'pNN50','Skewness','Kurtosis', 'EMG_RMS','EMG_RMS', 'EMG_ENERGY', 'EMG_MAV', 'EMG_VAR', 'EMG_ZC']
 
-    
-    for i in columns:
-        hrv_N = df_N[i]
-        r, p = pearson_corr(vas_N, hrv_N)
-        df_output = df_output.append({'N': j, 'HRVPara': i, 'Corr_HRVandVAS': r }, ignore_index=True)
 
-df_output.to_excel('Data/HRVandVAS_Corr.xlsx')
+
+
+
+
+
+
 
 
 

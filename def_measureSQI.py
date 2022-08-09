@@ -29,8 +29,8 @@ def ecgEpochScore(ecg):
 
 def splitEpochandisCleanSignal(ecg_raw, fs, sqi_threshold):
     ecg_raw = ecg_raw-np.median(ecg_raw)
-    for i in range(0, len(ecg_raw)):
-        clip_ecg = ecg_raw[i*fs : (i+1)*fs]
+    for i in range(0, len(ecg_raw)//fs-2, 2):  #220728修改
+        clip_ecg = ecg_raw[i*fs : (i+2)*fs]
         if ecgEpochScore(clip_ecg) > sqi_threshold:
             ecg_raw[i*fs : (i+1)*fs] = 0
     return ecg_raw

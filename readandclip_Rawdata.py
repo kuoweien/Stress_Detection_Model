@@ -18,8 +18,8 @@ import datetime
 
 raw_url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/Rawdata/LTA3_Rawdata/'
 # filename = '12-220624A.RAW'
-filename = '28-220725.241'
-n = 28 #受試者代碼
+filename = '1-220808b.241'
+n = 1 #受試者代碼
 
 # 調整儀器與標準時間的差異 正值表示儀器較標準時間快
 adjusttime_hr = 0

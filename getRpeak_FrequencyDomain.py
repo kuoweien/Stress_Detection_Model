@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d # 導入 scipy 中的一維插值工具 interp1d
 import scipy.fft
 import def_readandget_Rawdata
+import def_measureSQI as measureSQI
 
 def interpolate(raw_signal,n):   #signal為原始訊號 n為要插入產生為多少長度之訊號
 
@@ -64,10 +65,20 @@ plt.subplot(212)
 plt.plot(x_f,y_f_Real)
 '''
 
-
+# Read data parameters
 lta3_baseline = 0.9
 lta3_magnification = 250
 fs = 250
+
+# Sliding window parameters
+epoch_len = 150 # seconds
+rr_resample_rate = 7
+slidingwidow_len = 30 #seconds
+epoch = 2.5 # minutes
+minute_to_second = 60
+
+# Noise threshold
+checknoiseThreshold = 20
 
 # 抓Rpeak的參數
 medianfilter_size = 61
@@ -79,194 +90,246 @@ rpeak_close_range = 0.15*fs #0.1*fs
 lowpass_fq = 20
 highpass_fq = 10
 
-
-epoch_len = 150 # seconds
-rr_resample_rate = 1
-slidingwidow_len = 30 #seconds
-
-minute_to_second = 60
+# EMG參數
+qrs_range = int(0.32*fs)    # Human: int(0.32*fs)
+tpeak_range = int(0.2*fs)   # Human: int(0.2*fs)
 
 
-ecg_url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/ClipSituation_eachN/N27/'
-filename_baseline = 'Baseline.csv'
-filename_stroop = 'Stroop.csv'
-filename_b2 = 'Baseline_after_stroop.csv'
-filename_arithmetic = 'Arithmetic.csv'
-filename_b3 =  'Baseline_after_Arithmetic.csv'
-filename_speech = 'Speech.csv'
-filename_b4 = 'Baseline_after_speech.csv'
+
+input_N_start = 31
+input_N_end = 31
+df_output_url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/HRV/LTA3/Features/220801_FrequencyDomain.xlsx'
 
 
-df_baseline1 = pd.read_csv(ecg_url+filename_baseline)
-df_stroop = pd.read_csv(ecg_url+filename_stroop)
-df_baseline2 = pd.read_csv(ecg_url+filename_b2)
-df_arithmetic = pd.read_csv(ecg_url+filename_arithmetic)
-df_baseline3= pd.read_csv(ecg_url+filename_b3)
-df_speech = pd.read_csv(ecg_url+filename_speech)
-df_baseline4 = pd.read_csv(ecg_url+filename_b4)
-
-
-ecg_baseline1 = df_baseline1['ECG']
-ecg_stroop = df_stroop['ECG']
-ecg_baseline2 = df_baseline2['ECG']
-ecg_arithmetic = df_arithmetic['ECG']
-ecg_baseline3 = df_baseline3['ECG']
-ecg_speech = df_speech['ECG']
-ecg_baseline4 = df_baseline4['ECG']
-
-ecg_raw = (((((ecg_baseline1.append(ecg_stroop))
-            .append(ecg_baseline2)).append(ecg_arithmetic))
-            .append(ecg_baseline3)).append(ecg_speech)).append(ecg_baseline4)
-
-
-ecg_mV = (((np.array(ecg_raw))*1.8/65535-lta3_baseline)/lta3_magnification)*1000
-
+df_HRV_fqdomain = pd.DataFrame()
 
 tp_HRV = []
 hf_HRV = []
 lf_HRV = []
 vlf_HRV = []
-ulf_HRV = []
 nLF_HRV = []
 nHF_HRV = []
-lfhf_ratio_hrv =[]
+lfhf_ratio_hrv = []
 
-columns = ['Baseline', 'Stroop', 'Arithmetic', 'Speech']
-baseline_index = [0*minute_to_second*fs, 7.5*minute_to_second*fs]
-stroop_index = [5*minute_to_second*fs, 12.5*minute_to_second*fs]
-arithmetic_index = [15*minute_to_second*fs, 22.5*minute_to_second*fs]
-speech_index = [25*minute_to_second*fs, 32.5*minute_to_second*fs]
-
-
-# Baseline 頻域
-for i in range(10):
+for n in range(input_N_start, input_N_end+1):
+    # print('Participant:{}'.format(n))
+    if n == 7:
+        continue
     
-    input_ecg = ecg_mV[baseline_index[0]+(i*slidingwidow_len*fs) : int((baseline_index[0]+(2.5*minute_to_second*fs))+(i*slidingwidow_len*fs))]
+    ecg_url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/ClipSituation_eachN/N{}/'.format(n)
+    filename_baseline = 'Baseline.csv'
+    filename_stroop = 'Stroop.csv'
+    filename_b2 = 'Baseline_after_stroop.csv'
+    filename_arithmetic = 'Arithmetic.csv'
+    filename_b3 =  'Baseline_after_Arithmetic.csv'
+    filename_speech = 'Speech_3m.csv'
+    filename_b4 = 'Baseline_after_speech.csv'
+    
+    
+    df_baseline1 = pd.read_csv(ecg_url+filename_baseline)
+    df_stroop = pd.read_csv(ecg_url+filename_stroop)
+    df_baseline2 = pd.read_csv(ecg_url+filename_b2)
+    df_arithmetic = pd.read_csv(ecg_url+filename_arithmetic)
+    df_baseline3= pd.read_csv(ecg_url+filename_b3)
+    df_speech = pd.read_csv(ecg_url+filename_speech)
+    df_baseline4 = pd.read_csv(ecg_url+filename_b4)
+    
+    
+    ecg_baseline1 =  np.array(df_baseline1['ECG'])
+    ecg_stroop = np.array(df_stroop['ECG'])
+    ecg_baseline2 = np.array(df_baseline2['ECG'])
+    ecg_arithmetic = np.array(df_arithmetic['ECG'])
+    ecg_baseline3 = np.array(df_baseline3['ECG'])
+    ecg_speech = np.array(df_speech['ECG'])
+    ecg_baseline4 = np.array(df_baseline4['ECG'])
+    
+    # Rebuild protocal data
+    ecg_raw = np.concatenate((ecg_baseline1, ecg_stroop, ecg_baseline2, ecg_arithmetic, ecg_baseline3, ecg_speech, ecg_baseline4))
+    ecg_without_noise = measureSQI.splitEpochandisCleanSignal(ecg_raw, fs, checknoiseThreshold) #兩秒為Epoch，將雜訊的Y值改為0
+    ecg_mV = (((np.array(ecg_without_noise))*1.8/65535-lta3_baseline)/lta3_magnification)*1000
+    
+    
+    #%%計算頻域
+    
+    columns = ['Baseline', 'Stroop',  'Arithmetic', 'Speech']
+    
+    baseline_strart_index = 0*minute_to_second*fs
+    stroop_start_index = 5*minute_to_second*fs
+    arithmetic_start_index = 15*minute_to_second*fs
+    speech_start_index = 25*minute_to_second*fs
+    columns_index = [baseline_strart_index, stroop_start_index, arithmetic_start_index, speech_start_index]
+    
+    
+    for stress in range(len(columns)): # Run for four situation
+    # for stress in range(1): # Run for four situation
         
-    #抓Rpeak
-    median_ecg, rpeakindex = getRpeak.getRpeak_shannon(input_ecg, fs, medianfilter_size, gaussian_filter_sigma, moving_average_ms, final_shift ,detectR_maxvalue_range,rpeak_close_range)
-    
-    # RRI計算
-    rrinterval = np.diff(rpeakindex)
-    rrinterval = rrinterval/(fs/1000) #RRI index點數要換算回ms (%fs，1000是因為要換算成毫秒)
-    x_rrinterval = np.cumsum(rrinterval)
-    rrinterval_resample = interpolate(rrinterval, rr_resample_rate*epoch_len) #補點為rr_resample_rate HZ
-    x_rrinterval_resample = np.linspace(0, epoch_len, len(rrinterval_resample))
-    
-    
-    # median_filter = medfilt(rrinterval_resample, medianfilter_k)
-    # rrinterval_resample_median = rrinterval_resample-median_filter
-    rrinterval_resample_zeromean=rrinterval_resample-np.mean(rrinterval_resample)
-    
-    
-    # FFT轉頻域
-    y_f_Real, x_f = fft_power(rrinterval_resample_zeromean, rr_resample_rate, 'hanning')
-    
-    # 
-    # re_x_f = []
-    # re_y_f_Real = []
-    # for i in range(len(x_f)//3):
-    #     re_y_f_Real.append(np.sum(y_f_Real[i*3: (i+1)*3]))
-    #     re_x_f.append(x_f[(i)*3])
-    
-    
-    # -------畫圖----------
-    plt_len = 5
-    
-    plt.figure()
-    plt.subplot(plt_len,1,1)
-    plt.plot(median_ecg)
-    plt.scatter(rpeakindex, median_ecg[rpeakindex], color='red')
-    
-    plt.subplot(plt_len,1,2)
-    plt.plot(x_rrinterval, rrinterval)
-    
-    
-    plt.subplot(plt_len,1,3)
-    plt.plot(x_rrinterval_resample, rrinterval_resample)
-    
-    plt.subplot(plt_len,1,4)
-    plt.plot(x_f, y_f_Real/100)
-    plt.xlim(0.0,0.5)
-    
-    # plt.subplot(plt_len,1,5)
-    # plt.plot(re_x_f, re_y_f_Real)
-    # plt.xlim(0.0,0.5)
-    # plt.tight_layout()
-    
-    # 參數計算
-    tp_index = []
-    hf_index = []
-    lf_index = []
-    vlf_index = []
-    ulf_index = []
+        for i in range(10): # one stress situation have 10 data
+        # for i in range(1): # one stress situation have 10 data
+            print('Paricipant:{} Situation: {} Epoch:{}'.format(n, columns[stress], i))
         
-    
-    tp_index.append(np.where( (x_f<=0.4)))  
-    hf_index.append(np.where( (x_f>=0.15) & (x_f<=0.4)))  
-    lf_index.append(np.where( (x_f>=0.04) & (x_f<=0.15)))  
-    vlf_index.append(np.where( (x_f>=0.003) & (x_f<=0.04)))   
-    ulf_index.append(np.where( (x_f<=0.003)))   
-    
-    
-    tp_index = tp_index[0][0]
-    hf_index = hf_index[0][0]
-    lf_index = lf_index[0][0]
-    vlf_index = vlf_index[0][0]
-    ulf_index = ulf_index[0][0]
-    
-    
-    tp = np.sum(y_f_Real[tp_index[0]:tp_index[-1]])
-    hf = np.sum(y_f_Real[hf_index[0]:hf_index[-1]])
-    lf = np.sum(y_f_Real[lf_index[0]:lf_index[-1]])
-    vlf = np.sum(y_f_Real[vlf_index[0]:vlf_index[-1]])
-    ulf = np.sum(y_f_Real[ulf_index[0]:ulf_index[-1]])
-    nLF = (lf/(tp-vlf))*100
-    nHF = (hf/(tp-vlf))*100
-    lfhf_ratio = np.log(lf/hf)
-    
-    
-    tp_HRV.append(tp)
-    hf_HRV.append(hf)
-    lf_HRV.append(lf)
-    vlf_HRV.append(vlf)
-    ulf_HRV.append(ulf)
-    nLF_HRV.append(nLF)
-    nHF_HRV.append(nHF)
-    lfhf_ratio_hrv.append(lfhf_ratio)
+            # overlapping: (i*slidingwidow_len*fs) 
+            # sliding window: (2.5*minute_to_second*fs)
+            input_ecg = ecg_mV[columns_index[stress]+(i*slidingwidow_len*fs) : int((columns_index[stress]+(2.5*minute_to_second*fs)) + (i*slidingwidow_len*fs))] 
+                
+            # Get R peak from ECG by using shannon algorithm
+            median_ecg, rpeakindex = getRpeak.getRpeak_shannon(input_ecg, fs, medianfilter_size, gaussian_filter_sigma, moving_average_ms, final_shift ,detectR_maxvalue_range,rpeak_close_range)
+            
+            if len(rpeakindex)<=2: #若只抓到小於等於2點的Rpeak，會無法算HRV參數，因此將參數設為0
+                tp_log =0
+                hf_log = 0
+                vlf_log = 0
+                nLF = 0
+                nHF = 0
+                lfhf_ratio_log = 0
+                mnf = 0
+                mdf = 0
+               
+            else: #若Rpeak有多於2個點，進行HRV參數計算
+            
+                # RRI計算
+                rrinterval = np.diff(rpeakindex)
+                rrinterval = rrinterval/(fs/1000) #RRI index點數要換算回ms (%fs，1000是因為要換算成毫秒)
+                x_rrinterval = np.cumsum(rrinterval)
+                rrinterval_resample = interpolate(rrinterval, rr_resample_rate*epoch_len) #補點為rr_resample_rate HZ
+                x_rrinterval_resample = np.linspace(0, epoch_len, len(rrinterval_resample))
+                
+                rrinterval_resample_zeromean=rrinterval_resample-np.mean(rrinterval_resample)
+                
+                # EMG計算
+                emg_mV_linearwithzero, _ = getRpeak.deleteRTpeak(median_ecg,rpeakindex, qrs_range, tpeak_range) #刪除rtpeak並補0       
+                   
+                # FFT轉頻域
+                y_f_ECG, x_f_ECG = fft_power(rrinterval_resample_zeromean, rr_resample_rate, 'hanning')
+                y_f_EMG, x_f_EMG = fft_power(emg_mV_linearwithzero, fs, 'hanning')
+                
+                
+                
+                # -------畫頻譜圖----------
+                # plt_len = 5
+                
+                # plt.figure(figsize=(6,10))
+                # plt.subplot(plt_len,1,1)
+                # plt.plot(np.linspace(0,150,37500), median_ecg, 'black')
+                # plt.scatter(np.array(rpeakindex)/fs, median_ecg[rpeakindex], color='red')
+                # plt.ylabel('Raw ECG\n(mV)')
+                # plt.ylim(-2,2)
+                # plt.xlim(0,150)
+                # plt.xlabel('Time (s)')
+                
+        
+                # plt.subplot(plt_len,1,2)
+                # plt.plot(np.linspace(0,150,37500), emg_mV_linearwithzero, 'black')
+                # plt.ylabel('EMG\n(mV)')
+                # plt.ylim(-2,2)
+                # plt.xlim(0,150)
+                # plt.xlabel('Time (s)')
+                
+                      
+                # plt.subplot(plt_len,1,3)
+                # plt.plot(x_rrinterval_resample, rrinterval_resample, 'black')
+                # plt.xlim(0,150)
+                # plt.ylabel('RR\n(ms)')
+                # plt.xlabel('Time (s)')
+                
+                
+                # plt.subplot(plt_len,1,4)
+                # plt.plot(x_f_ECG, y_f_ECG/100, 'black')
+                # plt.xlim(0.0,0.5)
+                # plt.ylabel('PSDRR\n($ms^2$/Hz)')
+                # plt.xlabel('Frequency (Hz)')
+                
+                # plt.subplot(plt_len,1,5)
+                # plt.plot(x_f_EMG, y_f_EMG/100 ,'black')
+                # plt.xlim(0.0,125)
+                # plt.ylabel('PSDEMG\n($ms^2$/Hz)')
+                # plt.xlabel('Frequency (Hz)')
+                
+                # plt.tight_layout()
+                
+        
+                ## Calculate HRV frequency domain parameters
+                tp_index = []
+                hf_index = []
+                lf_index = []
+                vlf_index = []
+                ulf_index = []
+                    
+                
+                tp_index.append(np.where( (x_f_ECG<=0.4)))  
+                hf_index.append(np.where( (x_f_ECG>=0.15) & (x_f_ECG<=0.4)))  
+                lf_index.append(np.where( (x_f_ECG>=0.04) & (x_f_ECG<=0.15)))  
+                vlf_index.append(np.where( (x_f_ECG>=0.003) & (x_f_ECG<=0.04)))   
+                ulf_index.append(np.where( (x_f_ECG<=0.003)))   
+                
+                
+                tp_index = tp_index[0][0]
+                hf_index = hf_index[0][0]
+                lf_index = lf_index[0][0]
+                vlf_index = vlf_index[0][0]
+                ulf_index = ulf_index[0][0]
+                
+                
+                tp = np.sum(y_f_ECG[tp_index[0]:tp_index[-1]])
+                hf = np.sum(y_f_ECG[hf_index[0]:hf_index[-1]])
+                lf = np.sum(y_f_ECG[lf_index[0]:lf_index[-1]])
+                vlf = np.sum(y_f_ECG[vlf_index[0]:vlf_index[-1]])
+                # ulf = np.log(np.sum(y_f_ECG[ulf_index[0]:ulf_index[-1]]))
+                nLF = (lf/(tp-vlf))*100
+                nHF = (hf/(tp-vlf))*100
+                lfhf_ratio_log = np.log(lf/hf)
+                
+                tp_log = np.log(tp)
+                hf_log = np.log(hf)
+                lf_log = np.log(lf)
+                vlf_log = np.log(vlf)
+                
+                
+                ## Calculate EMG frequency domain parameters
+                mnf = np.sum(y_f_EMG)/len(x_f_EMG)
+                y_f_EMG_integral = np.cumsum(y_f_EMG)
+                mdf_median_index = (np.where(y_f_EMG_integral>np.max(y_f_EMG_integral)/2))[0][0] # Array is bigger than (under area)/2
+                mdf = y_f_EMG[mdf_median_index]
+                
+                
+                df_HRV_fqdomain = df_HRV_fqdomain.append({'N':n, 'Epoch':i+1, 
+                                                          'TP':tp_log , 'HF':hf_log, 'LF':lf_log, 'VLF':vlf_log,
+                                                          'nLF':nLF, 'nHF':nHF , 'LF/HF':lfhf_ratio_log, 
+                                                          'MNF': mnf, 'MDF': mdf, 
+                                                          'Situation':columns[stress]} ,ignore_index=True)
+        
 
 
+        # # Frequency Domain Epoch
+        # plt_len = 7
+        
+        # plt.figure()
+        
+        # plt.subplot(plt_len,1,1)
+        # plt.plot(tp_HRV)
+        
+        # plt.subplot(plt_len,1,2)
+        # plt.plot(hf_HRV)
+        
+        # plt.subplot(plt_len,1,3)
+        # plt.plot(lf_HRV)
+        
+        # plt.subplot(plt_len,1,4)
+        # plt.plot(vlf_HRV)
+        
+        # plt.subplot(plt_len,1,5)
+        # plt.plot(nLF_HRV)
+        
+        # plt.subplot(plt_len,1,6)
+        # plt.plot(nHF_HRV)
+        
+        # plt.subplot(plt_len,1,7)
+        # plt.plot(lfhf_ratio_hrv)
+        
+        # plt.title(columns[stress])
+        
+        
+df_HRV_fqdomain = df_HRV_fqdomain[['N', 'Epoch', 'Situation', 'TP', 'HF', 'LF', 'VLF', 'nLF', 'nHF', 'LF/HF', 'MNF', 'MDF']]
 
-
-# Frequency Domain Epoch
-plt_len = 8
-
-plt.figure()
-
-plt.subplot(plt_len,1,1)
-plt.plot(tp_HRV)
-
-plt.subplot(plt_len,1,2)
-plt.plot(hf_HRV)
-
-plt.subplot(plt_len,1,3)
-plt.plot(lf_HRV)
-
-plt.subplot(plt_len,1,4)
-plt.plot(vlf_HRV)
-
-plt.subplot(plt_len,1,5)
-plt.plot(ulf_HRV)
-
-plt.subplot(plt_len,1,6)
-plt.plot(nLF_HRV)
-
-plt.subplot(plt_len,1,7)
-plt.plot(nHF_HRV)
-
-plt.subplot(plt_len,1,8)
-plt.plot(lfhf_ratio_hrv)
-
-
+# df_HRV_fqdomain.to_excel(df_output_url)
 
 

@@ -38,17 +38,27 @@ lowpass_fq = 20
 highpass_fq = 10
 
 # EMG參數
-qrs_range = int(0.32*fs)    # Human: int(0.32*fs)
-tpeak_range = int(0.2*fs)   # Human: int(0.2*fs)
+qrs_range = int(0.32*fs)    
+tpeak_range = int(0.2*fs)   
+
+df_timedomain = pd.DataFrame()
+
+
+input_N_start = 29
+input_N_end = 32
+
+
+df_output_url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/HRV/LTA3/Features/220730_Features_Timedomain.xlsx'
 
 #%%讀取Data
 
-# columns = ['Baseline']
-columns = ['Baseline', 'Stroop', 'Baseline_after_stroop', 'Arithmetic', 'Baseline_after_Arithmetic', 'Speech', 'Baseline_after_Speech']
+# columns = ['Baseline', 'Stroop', 'Baseline_after_stroop', 'Arithmetic', 'Baseline_after_Arithmetic', 'Speech', 'Baseline_after_Speech']
+columns = ['Baseline', 'Stroop', 'Arithmetic',  'Speech']
 # columns = [ 'Baseline', 'Touch', 'Baseline_after_touch', 'Scared', 'Baseline_after_Scared', 'Play', 'Baseline_after_Play', 'Seperate', 'Baseline_after_Seperate', 'Eat', 'Baseline_after_Eat']
 
-for n in range(23, 25):
-    print('N:{}'.format(n))
+
+
+for n in range(input_N_start, input_N_end+1):
     
     for j in range(0, len(columns)):
         situation = columns[j]
@@ -57,12 +67,11 @@ for n in range(23, 25):
         ecg_url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/ClipSituation_eachN/N{}/{}.csv'.format(n, situation)
         df = pd.read_csv(ecg_url)
         ecg_raw = df['ECG']
-        df_parameter = pd.DataFrame()
-        df_rrinterval = pd.DataFrame()
         
         
         for i in range(0, 10): 
-            print(i)
+            print('Participant:{} Situation:{} Epoch:{}'.format(n, columns[j], i))
+            
             ecg = ecg_raw[i*fs*rri_epoch : (i+1)*rri_epoch*fs]
             if len(ecg) < (rri_epoch*fs):
                 break
@@ -153,16 +162,13 @@ for n in range(23, 25):
                 if (emg_mV_withoutZero[x]>0 and emg_mV_withoutZero[x+1]<0) or (emg_mV_withoutZero[x]<0 and emg_mV_withoutZero[x+1]>0):
                     emg_zc += 1
             
-            # 建立新檔
-            df_parameter = df_parameter.append({'N':n, 'Epoch':i+1, 'Mean':rri_mean , 'SD':rri_sd, 'RMSSD':rri_rmssd, 'NN50':rri_nn50, 'pNN50':rri_pnn50, 'Skewness':rri_skew, 'Kurtosis':rri_kurt , 'EMG_RMS':emg_rms, 'EMG_VAR':emg_var, 'EMG_MAV':emg_mav, 'EMG_ENERGY': emg_energy, 'EMG_ZC': emg_zc,'Situation':situation} ,ignore_index=True)
-            # df_parameter = df_parameter.append({'N':n, 'Epoch':i+1, 'EMG_RMS':emg_rms, 'EMG_VAR':emg_var, 'Situation':situation} ,ignore_index=True)
-            
-        # df_parameter.to_excel('/Users/weien/Desktop/ECG穿戴/實驗三_狗狗情緒/Dataset_Tidy/N{}/HRV.xlsx'.format(n))
-        
-        # 讀取已建立檔，並加入新資料
-        df_hrv = pd.read_excel('/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/HRV/LTA3/HRV原始Data/220714_HRV.xlsx')
-        df_hrv = df_hrv.append(df_parameter,ignore_index=True)
-        df_hrv.to_excel('/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/HRV/LTA3/HRV原始Data/220714_HRV.xlsx',index=False)
+            # 存入Data
+            df_timedomain = df_timedomain.append({'N':n, 'Epoch':i+1, 'Mean':rri_mean , 'SD':rri_sd, 'RMSSD':rri_rmssd, 'NN50':rri_nn50, 'pNN50':rri_pnn50, 'Skewness':rri_skew, 'Kurtosis':rri_kurt , 'EMG_RMS':emg_rms, 'EMG_VAR':emg_var, 'EMG_MAV':emg_mav, 'EMG_ENERGY': emg_energy, 'EMG_ZC': emg_zc,'Situation':situation} ,ignore_index=True)
+  
+# 排序欄位位置
+df_timedomain = df_timedomain[['N', 'Epoch', 'Situation', 'Mean','SD', 'RMSSD','NN50', 'pNN50','Skewness','Kurtosis', 'EMG_RMS', 'EMG_ENERGY', 'EMG_MAV', 'EMG_VAR', 'EMG_ZC']]
+
+# df_timedomain.to_excel(df_output_url, index=False)
         
         
         
