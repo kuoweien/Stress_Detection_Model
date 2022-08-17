@@ -399,8 +399,9 @@ def deleteRTpeak(rawdata, rpeakindex, qrs_range, tpeak_range): #與def fillRTpea
         sliplist_emg.append(rawdata[emg_startX:startX])
         emg_startX = endX
 
-            
-    return emg_nolinear, sliplist_emg    # emg_nolinear為已刪除rt波的圖EMG, 沒有補點之值（計算rms用）; sliplist_emg為把有emg部分切成list
+    # emg_nolinear為已刪除rt波的圖EMG, 沒有補點之值（計算rms用）; sliplist_emg為把有emg部分切成list 
+    # 且輸入為將rawdata轉為pd.Series(rawdata)
+    return emg_nolinear, sliplist_emg    
 
 #%%
 '''--------6. Def function for Statistics-------'''
@@ -498,7 +499,7 @@ def interpolate_rri(rawrrinterval, fs):
     i = 0
     while i < len(rrinterval_add):
     # for i in range(len(rrinterval)):
-        if rrinterval_add[i] >= 2*fs/(fs/1000) :    # 因為要把index值換算成ms
+        if rrinterval_add[i] >= 2*fs/(fs/1000) :    # 因為要把index值換算成ms 2是指刪除的兩秒
             insert_distance = (rrinterval_add[i-1] + rrinterval_add[i+1])/2
             n = int(rrinterval_add[i]/insert_distance)
             add_list = [insert_distance] * n

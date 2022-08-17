@@ -87,7 +87,7 @@ def pearson_corr(a_list, b_list):
 #%% 
 '''-----------與Baseline相比 壓力情境是否有統計差異-------------(HRV EMG相關參數統計計算)'''
 
-# url = 'Data/220801_Features.xlsx'
+# url = 'Data/220810_Features.xlsx'
 # df = pd.read_excel(url)
 
 # df_baseline = df[df['Situation'] == 'Baseline']
@@ -137,12 +137,12 @@ def pearson_corr(a_list, b_list):
 
 '''---------每人的HRV參數平均 -------'''
 
-# df = pd.read_excel('Data/220801_Features.xlsx')
+# df = pd.read_excel('Data/220810_Features.xlsx')
 
-# last_N = 32
+# last_N = 42
 
 # columns = ['Mean','SD', 'RMSSD','NN50', 'pNN50','Skewness','Kurtosis', 
-#             'EMG_RMS','EMG_RMS', 'EMG_ENERGY', 'EMG_MAV', 'EMG_VAR', 'EMG_ZC',
+#             'EMG_RMS', 'EMG_ENERGY', 'EMG_MAV', 'EMG_VAR', 'EMG_ZC',
 #             'TP', 'HF', 'LF', 'VLF', 'nLF', 'nHF', 'LF/HF', 'MNF', 'MDF']
 
 # stress = ['Baseline', 'Stroop', 'Arithmetic', 'Speech']
@@ -156,7 +156,7 @@ def pearson_corr(a_list, b_list):
 # # df_siation_mean = pd.DataFrame()
 # n_list = []
 
-# for n in range(2,(last_N+1)):
+# for n in range(1,(last_N+1)):
 #     if n == 7:
 #         continue
     
@@ -167,29 +167,29 @@ def pearson_corr(a_list, b_list):
 #     n_list = n_list+[n]*4
 
 # df_station_mean = df_station_mean.append(df_person_siation_mean, ignore_index=True)
-# df_station_mean['Situation'] = stress*(total_N-2)
+# df_station_mean['Situation'] = stress*(last_N-1)
 # df_station_mean['N'] = n_list
 
 # df_station_mean = df_station_mean[['N', 'Situation', 'Mean','SD', 'RMSSD','NN50', 'pNN50','Skewness','Kurtosis', 
-#             'EMG_RMS','EMG_RMS', 'EMG_ENERGY', 'EMG_MAV', 'EMG_VAR', 'EMG_ZC',
+#             'EMG_RMS', 'EMG_ENERGY', 'EMG_MAV', 'EMG_VAR', 'EMG_ZC',
 #             'TP', 'HF', 'LF', 'VLF', 'nLF', 'nHF', 'LF/HF', 'MNF', 'MDF']]
 
 
-# df_station_mean.to_excel('Data/220801_FeaturesMean.xlsx')
+# # df_station_mean.to_excel('Data/220810_FeaturesMean.xlsx')
 
 '''------------計算相關：HRV與VAS相關-------------'''
 
-# df = pd.read_excel('Data/220801_FeaturesMean.xlsx')
+# df = pd.read_excel('Data/220810_FeaturesMean.xlsx')
 # df_output = pd.DataFrame()
-# last_N = 32
+# last_N = 42
 
 # vas_url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/問卷&流程資料/Questionnaire.xlsx'
 # df_vas = pd.read_excel(vas_url, sheet_name = 'forAnalyze')
-# vas = df_vas['VAS_forAnalyze']
+# vas = df_vas['VAS']
 
 # df['VAS'] = vas
 
-# for j in range(2, (last_N+1)):
+# for j in range(1, (last_N+1)):
 #     if j == 7:
 #         continue
     
@@ -200,7 +200,7 @@ def pearson_corr(a_list, b_list):
 #     vas_N = df_N['VAS']
     
 #     columns = ['Mean','SD', 'RMSSD','NN50', 'pNN50','Skewness','Kurtosis', 
-#             'EMG_RMS','EMG_RMS', 'EMG_ENERGY', 'EMG_MAV', 'EMG_VAR', 'EMG_ZC',
+#             'EMG_RMS', 'EMG_ENERGY', 'EMG_MAV', 'EMG_VAR', 'EMG_ZC',
 #             'TP', 'HF', 'LF', 'VLF', 'nLF', 'nHF', 'LF/HF', 'MNF', 'MDF']
     
 #     for i in columns:
@@ -210,7 +210,7 @@ def pearson_corr(a_list, b_list):
 
 # df_output = df_output[['N', 'HRVPara', 'Corr_HRVandVAS']]
 
-# # df_output.to_excel('Data/220801_HRVandVAS_Corr.xlsx')
+# # df_output.to_excel('Data/220810_HRVandVAS_Corr.xlsx')
 
 '''-----------VAS內容統計差異-------------(問卷內容統計計算)'''
 
@@ -224,13 +224,13 @@ def pearson_corr(a_list, b_list):
 # columns = [stroop_vas, arithmetic_vas, speech_vas]
 # baseline_vas_pvalue = checkisNormal(baseline_vas)
 
-# # columns = [arithmetic_vas, speech_vas]
-# # stroop_vas_pvalue = checkisNormal(stroop_vas)
-# # baseline_vas_pvalue = stroop_vas_pvalue
+# columns = [arithmetic_vas, speech_vas]
+# stroop_vas_pvalue = checkisNormal(stroop_vas)
+# baseline_vas_pvalue = stroop_vas_pvalue
 
-# # columns = [speech_vas]
-# # stroop_vas_pvalue = checkisNormal(arithmetic_vas)
-# # baseline_vas_pvalue = stroop_vas_pvalue
+# columns = [speech_vas]
+# stroop_vas_pvalue = checkisNormal(arithmetic_vas)
+# baseline_vas_pvalue = stroop_vas_pvalue
 
 # for i in columns:
 
@@ -290,11 +290,11 @@ def pearson_corr(a_list, b_list):
 
 
 '''-------------特徵線性相關---------------'''
-df = pd.read_excel('Data/220801_Features.xlsx')
-df = df.iloc[:, 3:23]
-cormat = df.corr()
-round(cormat,2)
-sns.heatmap(cormat)
+# df = pd.read_excel('Data/220801_Features.xlsx')
+# df = df.iloc[:, 3:23]
+# cormat = df.corr()
+# round(cormat,2)
+# sns.heatmap(cormat)
 
 
 

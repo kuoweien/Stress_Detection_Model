@@ -16,15 +16,18 @@ import math
 
 
 
+
+
+#%%
 fs = 250
 
-checknoiseThreshold = 20 #2秒Epoch刪雜訊時的閾值 Patch=0.419 LTA3=2.210
+checknoiseThreshold = 2.2 #2秒Epoch刪雜訊時的閾值 Patch=0.419 LTA3=2.210
 
 rri_epoch = 30 # Epoch
 
 patch_baseline = 0
-lta3_baseline = 0.9
 patch_magnification = 120
+lta3_baseline = 0.9
 lta3_magnification = 250
 
 # 抓Rpeak的參數
@@ -44,32 +47,37 @@ tpeak_range = int(0.2*fs)
 df_timedomain = pd.DataFrame()
 
 
-input_N_start = 29
-input_N_end = 32
+input_N_start = 1
+input_N_end = 1
 
 
-df_output_url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/HRV/LTA3/Features/220730_Features_Timedomain.xlsx'
+
+df_output_url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/HRV/LTA3/Features/220810_Timedomain.xlsx'
 
 #%%讀取Data
 
 # columns = ['Baseline', 'Stroop', 'Baseline_after_stroop', 'Arithmetic', 'Baseline_after_Arithmetic', 'Speech', 'Baseline_after_Speech']
-columns = ['Baseline', 'Stroop', 'Arithmetic',  'Speech']
+# columns = ['Baseline', 'Stroop', 'Arithmetic',  'Speech']
+columns = ['Baseline', 'Shake_shoulder']
 # columns = [ 'Baseline', 'Touch', 'Baseline_after_touch', 'Scared', 'Baseline_after_Scared', 'Play', 'Baseline_after_Play', 'Seperate', 'Baseline_after_Seperate', 'Eat', 'Baseline_after_Eat']
 
 
 
 for n in range(input_N_start, input_N_end+1):
     
+    if n==7:
+        continue
+    
     for j in range(0, len(columns)):
         situation = columns[j]
         #讀取之ECG csv檔
-        # ecg_url = 'Data/N{}/{}.csv'.format(n,situation) 
-        ecg_url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/ClipSituation_eachN/N{}/{}.csv'.format(n, situation)
+        # ecg_url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/ClipSituation_eachN/N{}/{}.csv'.format(n, situation)
+        ecg_url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/ClipSituation_eachN/驗證資料/{}.csv'.format(columns[j])
         df = pd.read_csv(ecg_url)
         ecg_raw = df['ECG']
         
         
-        for i in range(0, 10): 
+        for i in range(0,1): 
             print('Participant:{} Situation:{} Epoch:{}'.format(n, columns[j], i))
             
             ecg = ecg_raw[i*fs*rri_epoch : (i+1)*rri_epoch*fs]
@@ -87,11 +95,18 @@ for n in range(input_N_start, input_N_end+1):
             median_ecg, rpeakindex = getRpeak.getRpeak_shannon(ecg_nonoise_mV, fs, medianfilter_size, gaussian_filter_sigma, moving_average_ms, final_shift ,detectR_maxvalue_range,rpeak_close_range)
             
         # 畫圖
-            # plt.figure(figsize=(14,2))
-            # plt.plot(median_ecg, 'black')
-            # plt.scatter(np.array(rpeakindex), median_ecg[rpeakindex], alpha=0.5, c='r')
-            # plt.title(situation)
-            # plt.ylim(-1.5, 1.5)
+            plt.figure(figsize=(14,2))
+            plt.subplot(3,1,1)
+            plt.plot(np.linspace(0, 30, 7500), median_ecg, 'black')
+            plt.title('Positive control')
+            plt.ylim(-2, 2)
+            plt.xlim(0,30)
+            
+            plt.subplot(3,1,2)
+            plt.plot(median_ecg, 'black')
+            plt.scatter(np.array(rpeakindex)/fs, median_ecg[np.array(rpeakindex)/fs], alpha=0.5, c='r')
+            plt.ylim(-2, 2)
+            plt.xlim(0,30)
             
         #%%計算RRI
         # RR interval
@@ -107,16 +122,17 @@ for n in range(input_N_start, input_N_end+1):
             else: #若Rpeak有多於2個點，進行HRV參數計算
                 rrinterval = np.diff(rpeakindex)
                 rrinterval = rrinterval/(fs/1000) #RRI index點數要換算回ms (%fs，1000是因為要換算成毫秒)
-            
+                
+                
                 # plt.figure(figsize=(10,2))
                 # plt.ylim(0,3600)
                 # plt.xlim(0, len(rrinterval))
                 # plt.ylabel('ms')
                 # plt.plot(rrinterval, '-o', c='black')
-            
-            
+                
+                
                 re_rrinterval = getRpeak.interpolate_rri(rrinterval, fs)
-            
+                
                 # plt.figure(figsize=(10,2))
                 # plt.ylim(0,3600)
                 # plt.xlim(0, len(rrinterval_add))
@@ -147,9 +163,10 @@ for n in range(input_N_start, input_N_end+1):
             emg_mV_linearwithzero, _ = getRpeak.deleteRTpeak(median_ecg,rpeakindex, qrs_range, tpeak_range) #刪除rtpeak並補0
             emg_mV_withoutZero = getRpeak.deleteZero(emg_mV_linearwithzero) 
             
-            # plt.figure(figsize = (14,2))
-            # plt.plot(emg_mV_withoutZero, '-ko')
-            # plt.ylim(-1.5, 1.5)
+            plt.subplot(3,1,3)
+            plt.plot(emg_mV_withoutZero, '-ko')
+            plt.ylim(-2, 2)
+            plt.xlim(0,30)
     
             # EMG相關參數計算
             emg_rms = np.sqrt(np.mean(emg_mV_withoutZero**2))

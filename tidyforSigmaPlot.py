@@ -11,7 +11,7 @@ import pandas as pd
 
 '''---------------原始ECG EMG Features（Raw檔）整理成SigmaPlot要的樣子---------------------'''
 
-# url = 'Data/220801_Features.xlsx'
+# url = 'Data/220810_Features.xlsx'
 # df = pd.read_excel(url, sheet_name='Sheet1')
 # df_output = pd.DataFrame()
 
@@ -45,65 +45,66 @@ import pandas as pd
 
 
 '''---------------平均HRV參數整理成SigmaPlot要的樣子 -散步圖畫每個人HRV參數與VAS問卷的相關性---------------------'''
-# url = 'Data/220801_FeaturesMean.xlsx'
-# allN = 32
+url = 'Data/Temp_220816_FeaturesMean.xlsx'
 
-# df = pd.read_excel(url)
+last_N = 42
 
-# df_output = pd.DataFrame()
+df = pd.read_excel(url)
+
+df_output = pd.DataFrame()
 
 
-# vas_url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/問卷&流程資料/Questionnaire.xlsx'
-# df_vas = pd.read_excel(vas_url, sheet_name = 'forAnalyze')
-# vas = df_vas['VAS_forAnalyze']
+vas_url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/問卷&流程資料/Questionnaire.xlsx'
+df_vas = pd.read_excel(vas_url, sheet_name = 'forAnalyze')
+vas = df_vas['VAS']
 
-# df['VAS'] = vas
+df['VAS'] = vas
 
-# Stress = ['Baseline', 'Stroop', 'Arithmetic', 'Speech']
-# Parameters = ['Mean','SD', 'RMSSD','NN50', 'pNN50','Skewness','Kurtosis', 
-#         'EMG_RMS','EMG_RMS', 'EMG_ENERGY', 'EMG_MAV', 'EMG_VAR', 'EMG_ZC',
-#         'TP', 'HF', 'LF', 'VLF', 'nLF', 'nHF', 'LF/HF', 'MNF', 'MDF']
+Stress = ['Baseline', 'Stroop', 'Arithmetic', 'Speech']
+Parameters = ['Mean','SD', 'RMSSD','NN50', 'pNN50','Skewness','Kurtosis', 
+        'EMG_RMS', 'EMG_ENERGY', 'EMG_MAV', 'EMG_VAR', 'EMG_ZC',
+        'TP', 'HF', 'LF', 'VLF', 'nLF', 'nHF', 'LF/HF', 'MNF', 'MDF']
 
-# i = 0
-# for para in Parameters:
+i = 0
+for para in Parameters:
     
-#     df_output[i] = [para]*4 #標示參數
-#     i+=1 #進到下一欄位
+    df_output[i] = [para]*4 #標示參數
+    i+=1 #進到下一欄位
     
-#     df_split = df.loc[:,['N', 'Situation','VAS',para]]
+    df_split = df.loc[:,['N', 'Situation','VAS',para]]
     
     
     
-#     for n in range(2, allN+1):
-#         if n ==7:
-#             continue
+    for n in range(1, last_N+1):
+        if n ==7:
+            continue
         
-#         df_oneN = df_split[df_split['N'] == n]
-#         df_oneN = df_oneN.reset_index(drop=True)  #Series index要改為0為起始
+        df_oneN = df_split[df_split['N'] == n]
+        df_oneN = df_oneN.reset_index(drop=True)  #Series index要改為0為起始
         
-#         oneN_vas = df_oneN['VAS']
-#         df_output[i] = oneN_vas
-#         i+=1 #進到下一欄位
+        oneN_vas = df_oneN['VAS']
+        df_output[i] = oneN_vas
+        i+=1 #進到下一欄位
         
-#         oneN_para = df_oneN[para]
-#         df_output[i] = oneN_para
-#         i+=1 #進到下一欄位
+        oneN_para = df_oneN[para]
+        df_output[i] = oneN_para
+        i+=1 #進到下一欄位
  
-# # df_output.to_excel('Data/220801_HRVMean_forsigma.xlsx')
+df_output.to_excel('Data/220810_HRVMean_forsigma.xlsx')
 
 
 '''----------相關性整理 成SigmaPlot要的-------'''
 
-# url = 'Data/220801_HRVandVAS_Corr.xlsx'
+# url = 'Data/220810_HRVandVAS_Corr.xlsx'
 
-# allN_noerrordata = 30
+# allN_noerrordata = 41
 
 # df = pd.read_excel(url)
 # df_output = pd.DataFrame()
 
 
 # Parameters = ['Mean','SD', 'RMSSD','NN50', 'pNN50','Skewness','Kurtosis', 
-#         'EMG_RMS','EMG_RMS', 'EMG_ENERGY', 'EMG_MAV', 'EMG_VAR', 'EMG_ZC',
+#         'EMG_RMS', 'EMG_ENERGY', 'EMG_MAV', 'EMG_VAR', 'EMG_ZC',
 #         'TP', 'HF', 'LF', 'VLF', 'nLF', 'nHF', 'LF/HF', 'MNF', 'MDF']
     
 # i=0
@@ -119,7 +120,7 @@ import pandas as pd
 #     df_output[i] = corr
 #     i+=1
     
-# df_output.to_excel('Data/corrforsigma.xlsx')
+# # df_output.to_excel('Data/corrforsigma.xlsx')
 
 
 

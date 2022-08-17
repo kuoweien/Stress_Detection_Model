@@ -78,7 +78,7 @@ epoch = 2.5 # minutes
 minute_to_second = 60
 
 # Noise threshold
-checknoiseThreshold = 20
+checknoiseThreshold = 10
 
 # 抓Rpeak的參數
 medianfilter_size = 61
@@ -96,9 +96,9 @@ tpeak_range = int(0.2*fs)   # Human: int(0.2*fs)
 
 
 
-input_N_start = 31
-input_N_end = 31
-df_output_url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/HRV/LTA3/Features/220801_FrequencyDomain.xlsx'
+input_N_start = 1
+input_N_end = 42
+df_output_url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/HRV/LTA3/Features/220810_FrequencyDomain.xlsx'
 
 
 df_HRV_fqdomain = pd.DataFrame()
@@ -189,8 +189,20 @@ for n in range(input_N_start, input_N_end+1):
                 # RRI計算
                 rrinterval = np.diff(rpeakindex)
                 rrinterval = rrinterval/(fs/1000) #RRI index點數要換算回ms (%fs，1000是因為要換算成毫秒)
-                x_rrinterval = np.cumsum(rrinterval)
-                rrinterval_resample = interpolate(rrinterval, rr_resample_rate*epoch_len) #補點為rr_resample_rate HZ
+                
+                re_rrinterval = getRpeak.interpolate_rri(rrinterval, fs) #對因雜訊刪除的RRI進行補點
+                #RRI 相關參數
+                re_rri_mean = np.mean(re_rrinterval)
+                re_rri_sd = np.std(re_rrinterval)
+                
+                outlier_upper = re_rri_mean+(3*re_rri_sd) 
+                outlier_lower = re_rri_mean-(3*re_rri_sd)
+                
+                re_rrinterval = re_rrinterval[re_rrinterval<outlier_upper]
+                re_rrinterval = re_rrinterval[re_rrinterval>outlier_lower]  #刪除outlier的rrinterval
+                
+
+                rrinterval_resample = interpolate(re_rrinterval, rr_resample_rate*epoch_len) #補點為rr_resample_rate HZ
                 x_rrinterval_resample = np.linspace(0, epoch_len, len(rrinterval_resample))
                 
                 rrinterval_resample_zeromean=rrinterval_resample-np.mean(rrinterval_resample)

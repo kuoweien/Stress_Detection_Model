@@ -16,10 +16,11 @@ import datetime
 
 '''------------------------解碼Raw檔---------------------------'''
 
-raw_url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/Rawdata/LTA3_Rawdata/'
-# filename = '12-220624A.RAW'
-filename = '1-220808b.241'
-n = 1 #受試者代碼
+# raw_url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/Rawdata/LTA3_Rawdata/'
+raw_url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/Rawdata/驗證資料/'
+# filename = '42-220810c.241'
+filename = '220510d.241'
+n = 0 #受試者代碼
 
 # 調整儀器與標準時間的差異 正值表示儀器較標準時間快
 adjusttime_hr = 0
@@ -46,6 +47,7 @@ df_onedata = df_time[df_time['N']==n ]
 
 
 # 人的
+# columns = ['Shake_shoulder']
 columns = ['Baseline', 'Stroop', 'Baseline_after_stroop', 'Arithmetic', 'Baseline_after_Arithmetic', 'Speech', 'Speech_3m', 'Baseline_after_speech']
 # 狗的
 # columns = ['Baseline', 'Touch', 'Baseline_after_touch', 'Scared', 'Baseline_after_Scared', 'Play', 'Baseline_after_Play', 'Seperate', 'Baseline_after_Seperate', 'Eat', 'Baseline_after_Eat']
@@ -54,6 +56,7 @@ for i in columns:
 
     time = ((df_onedata[i]).tolist())[0]
     if str(time) == 'nan':
+        print('This parrticipant (N{}) has no time data'.format(n))
         continue
     
     adjust_totalseconds = adjusttime_hr*3600 + adjusttime_min*60 + adjusttime_sec
@@ -72,8 +75,9 @@ for i in columns:
     ecg_condition = def_readandget_Rawdata.inputtimetoClipRawdata(ecg_raw, fs, updatetime, start_time ,end_time) #取時間
     
     df = pd.DataFrame({'ECG':ecg_condition})
-    outputurl = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/ClipSituation_eachN/N{}/{}.csv'.format(n, i)
-    df.to_csv(outputurl)
+    # outputurl = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/ClipSituation_eachN/N{}/{}.csv'.format(n, i)
+    # outputurl = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/ClipSituation_eachN/驗證資料/{}.csv'.format(i)
+    # df.to_csv(outputurl)
     
     plt.figure(figsize=(12,2))
     plt.plot(ecg_condition ,'black')
