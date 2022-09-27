@@ -500,11 +500,15 @@ def interpolate_rri(rawrrinterval, fs):
     while i < len(rrinterval_add):
     # for i in range(len(rrinterval)):
         if rrinterval_add[i] >= 2*fs/(fs/1000) :    # 因為要把index值換算成ms 2是指刪除的兩秒
-            insert_distance = (rrinterval_add[i-1] + rrinterval_add[i+1])/2
-            n = int(rrinterval_add[i]/insert_distance)
-            add_list = [insert_distance] * n
-            rrinterval_add = np.append(np.append(rrinterval_add[:i], add_list), rrinterval_add[i+1:])
-            i+=n
+            try:
+                insert_distance = (rrinterval_add[i-1] + rrinterval_add[i+1])/2
+                n = int(rrinterval_add[i]/insert_distance)
+                add_list = [insert_distance] * n
+                rrinterval_add = np.append(np.append(rrinterval_add[:i], add_list), rrinterval_add[i+1:])
+                i+=n
+            except IndexError:
+                pass
+
         i+=1
         
     return rrinterval_add

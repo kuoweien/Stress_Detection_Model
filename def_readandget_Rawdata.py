@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import datetime
 from scipy import signal
 import numpy as np
-import dataDecode
+import def_dataDecode as dataDecode
 
 # 讀Raw檔
 def openRawFile(filename):

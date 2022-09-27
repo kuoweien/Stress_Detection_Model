@@ -9,48 +9,53 @@ import def_readandget_Rawdata as getRawdata
 import matplotlib.pyplot as plt
 import pandas as pd
 import def_readandget_Rawdata
-
+import numpy as np
 import datetime
 
 
+'''------------------------Unzip Raw File---------------------------'''
 
-'''------------------------解碼Raw檔---------------------------'''
+raw_url = 'Data/Rawdata/LTA3_Rawdata/'
+filename = '49-220830a.241'
+n = 49 # Participant's number
 
-# raw_url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/Rawdata/LTA3_Rawdata/'
-raw_url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/Rawdata/驗證資料/'
-# filename = '42-220810c.241'
-filename = '220510d.241'
-n = 0 #受試者代碼
 
-# 調整儀器與標準時間的差異 正值表示儀器較標準時間快
+# Adjust the different between devices time and standard time (>0 means devices time is faster)
 adjusttime_hr = 0
 adjusttime_min = 0
 adjusttime_sec = 0
 
-rawfile_url = raw_url+filename #壓縮檔的url
-ecg_raw, fs, updatetime = def_readandget_Rawdata.openRawFile(rawfile_url) #解Raw檔
-# ecg_raw = def_readandget_Rawdata.get_data_complement(ecg_raw) #取補數
+rawfile_url = raw_url+filename # unzip url
+ecg_raw, fs, updatetime = getRawdata.openRawFile(rawfile_url) # unzip raw file
+# ecg_raw = getRawdata.get_data_complement(ecg_raw) # get complement data
 
-# 印原始圖
-# plt.figure(figsize=(12,4))
-# plt.plot(ecg_raw ,'black')
-# plt.title('RawECG')
+
+# print raw data plot
+# plt.figure(figsize=(12,6))
+# plt.plot(np.linspace(0, 200, len(ecg_mV)), ecg_mV ,'black')
+# plt.xlim(0,200)
+# plt.ylim(-1,1.5)
+# plt.ylabel('ECG (mV)', fontsize=14)
+# plt.xlabel('Time (s)', fontsize=14)
+# plt.xticks(fontsize=12)
+# plt.yticks(fontsize=12)
 # ecg_raw = ecg_raw*-1
 
 
-'''------------------------將data分成不同csv檔儲存---------------------------'''
-#讀protocl時間
-time_url = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/問卷&流程資料/Protocal_Time.xlsx'
+'''------------------------save csv file of each situation data---------------------------'''
+
+# read protocl time
+time_url = 'Data/BasicData/Protocal_Time.xlsx'
 df_time = pd.read_excel(time_url)
 df_onedata = df_time[df_time['N']==n ]
 
 
 
-# 人的
-# columns = ['Shake_shoulder']
+# Human
 columns = ['Baseline', 'Stroop', 'Baseline_after_stroop', 'Arithmetic', 'Baseline_after_Arithmetic', 'Speech', 'Speech_3m', 'Baseline_after_speech']
-# 狗的
+# Dog
 # columns = ['Baseline', 'Touch', 'Baseline_after_touch', 'Scared', 'Baseline_after_Scared', 'Play', 'Baseline_after_Play', 'Seperate', 'Baseline_after_Seperate', 'Eat', 'Baseline_after_Eat']
+
 
 for i in columns:
 
@@ -64,7 +69,6 @@ for i in columns:
     start_time = time.split('-')[0]
     start_time_datetime = datetime.datetime.strptime(start_time, '%H:%M:%S')
     start_time = (start_time_datetime+datetime.timedelta(seconds = adjust_totalseconds)).strftime('%H:%M:%S')
-    
 
     
     end_time = time.split('-')[1]
@@ -75,16 +79,11 @@ for i in columns:
     ecg_condition = def_readandget_Rawdata.inputtimetoClipRawdata(ecg_raw, fs, updatetime, start_time ,end_time) #取時間
     
     df = pd.DataFrame({'ECG':ecg_condition})
-    # outputurl = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/ClipSituation_eachN/N{}/{}.csv'.format(n, i)
-    # outputurl = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/ClipSituation_eachN/驗證資料/{}.csv'.format(i)
-    # df.to_csv(outputurl)
+    outputurl = 'Data/ClipSituation_CSVfile/N{}/{}.csv'.format(n, i)
+    df.to_csv(outputurl)
     
     plt.figure(figsize=(12,2))
     plt.plot(ecg_condition ,'black')
     plt.title(i)
-
-
-
-
 
 
