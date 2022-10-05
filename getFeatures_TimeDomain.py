@@ -91,16 +91,8 @@ for n in range(input_N_start, input_N_end+1):
             median_ecg, rpeakindex = getRpeak.getRpeak_shannon(ecg_nonoise_mV, fs, medianfilter_size, gaussian_filter_sigma, moving_average_ms, final_shift ,detectR_maxvalue_range,rpeak_close_range)
             x_lin = np.linspace(0, 30, len(median_ecg))
             
-        # 畫圖
-            # plt.figure(figsize=(14,2))
-            # plt.subplot(2,1,1)
-            # plt.plot(x_lin, median_ecg, 'black')
-            # plt.scatter(np.array(rpeakindex)/fs, median_ecg[rpeakindex], alpha=0.5, c='r')
-            # plt.ylim(-2, 2)
-            # plt.xlim(0,30)
             
         #%%計算RRI
-        # RR interval
             if len(rpeakindex)<=2: #若只抓到小於等於2點的Rpeak，會無法算HRV參數，因此將參數設為0
                 rri_mean =0
                 rri_sd = 0
@@ -113,23 +105,9 @@ for n in range(input_N_start, input_N_end+1):
             else: #若Rpeak有多於2個點，進行HRV參數計算
                 rrinterval = np.diff(rpeakindex)
                 rrinterval = rrinterval/(fs/1000) #RRI index點數要換算回ms (%fs，1000是因為要換算成毫秒)
-                
-                
-                # plt.figure(figsize=(10,2))
-                # plt.ylim(0,3600)
-                # plt.xlim(0, len(rrinterval))
-                # plt.ylabel('ms')
-                # plt.plot(rrinterval, '-o', c='black')
-                
-                
-                re_rrinterval = getRpeak.interpolate_rri(rrinterval, fs)
-                
-                # plt.figure(figsize=(10,2))
-                # plt.ylim(0,3600)
-                # plt.xlim(0, len(rrinterval_add))
-                # plt.ylabel('ms')
-                # plt.plot(rrinterval_add, '-o', c='black') 
             
+                re_rrinterval = getRpeak.interpolate_rri(rrinterval, fs) # 補點
+                
                 #RRI 相關參數
                 rri_mean = np.mean(re_rrinterval)
                 rri_sd = np.std(re_rrinterval)
@@ -148,16 +126,10 @@ for n in range(input_N_start, input_N_end+1):
                 rri_nn50 = len(np.where(np.abs(np.diff(re_rrinterval))>50)[0]) #NN50 心跳間距超過50ms的個數，藉此評估交感
                 rri_pnn50 = rri_nn50/len(re_rrinterval)
         
-        #%%取EMG
-    
-            
+        #%%取EMG        
             emg_mV_linearwithzero, _ = getRpeak.deleteRTpeak(median_ecg,rpeakindex, qrs_range, tpeak_range) #刪除rtpeak並補0
             emg_mV_withoutZero = getRpeak.deleteZero(emg_mV_linearwithzero) 
             
-            # plt.subplot(2,1,2)
-            # plt.plot(emg_mV_withoutZero, '-ko')
-            # plt.ylim(-2, 2)
-            # plt.xlim(0,30)
     
             # EMG相關參數計算
             emg_rms = np.sqrt(np.mean(emg_mV_withoutZero**2))

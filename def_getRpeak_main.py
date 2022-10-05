@@ -234,7 +234,7 @@ def detectRpeak(ecg_raw, peaks_x, peaks_y): #決策Threshold找Rpeak
 '''------------4. Def for Decision Rules------------'''
 
 #校正Rpeak位置，找最小值   
-def ecgfindtheminvalue(rawdata, rpeak_x, range_n): #因前面會抓錯 所以直接找在附近range_n的最小值
+def findMinvalue(rawdata, rpeak_x, range_n): #因前面會抓錯 所以直接找在附近range_n的最小值
     newrpeak = pd.Series()
     rawdata = pd.Series(rawdata)
     for i in range(len(rpeak_x)):
@@ -256,7 +256,7 @@ def ecgfindtheminvalue(rawdata, rpeak_x, range_n): #因前面會抓錯 所以直
     return newdetedted_rpeak_x, newdetedted_rpeak_y
 
 #校正Rpeak位置，找最大值
-def ecgfindthemaxvalue(rawdata, rpeak_x, range_n): #Decision rule找最大值(因前面會抓錯)在rpeak附近range_n點找最大值 input原始data, detected rpeak, 找尋最大值範圍
+def findMaxvalue(rawdata, rpeak_x, range_n): #Decision rule找最大值(因前面會抓錯)在rpeak附近range_n點找最大值 input原始data, detected rpeak, 找尋最大值範圍
     newrpeak = pd.Series()
     rawdata = pd.Series(rawdata)
     for i in range(len(rpeak_x)):
@@ -315,6 +315,8 @@ def deleteExtremeHistValue(rrinterval_list):#dict新增被刪除的value dic
     rri_keep_value=set(rrinterval_list)-set(delvalue)
     
     return rri_keep_value
+
+
 
 
 #%% EMG
@@ -459,7 +461,7 @@ def getRpeak_pantompskin(ecg ,fs, medianfilter_size, lowpass_fq, highpass_fq):
     ecg_square = np.square(ecg_defivative)       #平方
     peaks_x, peaks_y = findpeak(ecg_square)
     detedted_rpeak_x,detedted_rpeak_y = detectRpeak(rawdata_mV, peaks_x, peaks_y)       #Pantompkin決策演算抓rpeak 資料來源：網路找的Github
-    newdetedted_rpeak_x, _ = ecgfindthemaxvalue(ecg, detedted_rpeak_x, (0.35*fs)*2)
+    newdetedted_rpeak_x, _ = findMaxvalue(ecg, detedted_rpeak_x, (0.35*fs)*2)
     
     return ecg_median, newdetedted_rpeak_x
 
@@ -483,13 +485,35 @@ def getRpeak_shannon(ecg, fs, medianfilter_size, gaussian_filter_sigma, moving_a
     zero_index = findZeroCross(hibertmoving_data)  #Positive zero crossing point
     zero_shift_index = shiftArray(zero_index, final_shift) #位移結果
     
-    #Decision Rule: input分為三種 1.以RawECG找最大值 2.bandfilterECG找最大值 3.RawECG找最小值
-    detect_Rpeak_index, _   = ecgfindthemaxvalue(median_ecg, zero_shift_index, detectR_maxvalue_range)  # RawECG抓R peak 找範圍內的最大值 
-    re_detect_Rpeak_index = deleteCloseRpeak(detect_Rpeak_index, rpeak_close_range) #刪除rpeak間隔小於rpeak_close_range之值
-    # re_detect_Rpeak_index = deleteLowerRpeak(re_detect_Rpeak_index, ecg, 0.001)
+    #Decision Rule
+    detect_maxRpeak_index, _   = findMaxvalue(median_ecg, zero_shift_index, detectR_maxvalue_range)  # RawECG抓R peak 找範圍內的最大值 
+    detect_minRpeak_index, _   = findMinvalue(median_ecg, zero_shift_index, detectR_maxvalue_range)  # RawECG抓R peak 找範圍內的最大值 
+    
+    detect_Rpeak_index = []
+    
+    for i in range(len(detect_maxRpeak_index)):
+        if (np.abs(detect_maxRpeak_index[i]) >= np.abs(detect_minRpeak_index)).all():
+            detect_Rpeak_index.append(detect_maxRpeak_index[i])
+        elif (np.abs(detect_maxRpeak_index[i]) < np.abs(detect_minRpeak_index)).all():
+            detect_Rpeak_index.append(detect_minRpeak_index[i])
+    
+    # maxRpeak_sum = np.sum(np.abs(ecg[detect_maxRpeak_index]))
+    # minRpeak_sum = np.sum(np.abs(ecg[detect_minRpeak_index]))
+        
+    # detect_Rpeak_index = []
+    # if maxRpeak_sum >= minRpeak_sum:
+    #     detect_Rpeak_index = detect_maxRpeak_index
+    # elif minRpeak_sum > maxRpeak_sum:
+    #     detect_Rpeak_index = detect_minRpeak_index
+    rpeakindex = deleteCloseRpeak(detect_Rpeak_index, rpeak_close_range) #刪除rpeak間隔小於rpeak_close_range之值
 
-    return median_ecg, re_detect_Rpeak_index
 
+    return median_ecg, rpeakindex
+
+
+
+# (np.array([1, 2, 3]) == [1, 2, 4]).all()
+# print((np.array([1, 2, 3]) == [1, 2, 4]).any())
 #%%
 '''-------8. Def function for RRI------------'''
 # 將因雜訊刪除的RRI進行補點
