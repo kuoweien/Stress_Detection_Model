@@ -89,7 +89,6 @@ def spearmon_corr(a_list, b_list):
     return r, p 
 
 
-# Spearman
 
 #%% 
 '''-----------與Baseline相比 壓力情境是否有統計差異-------------(HRV EMG相關參數統計計算)'''

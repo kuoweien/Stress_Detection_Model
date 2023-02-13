@@ -80,7 +80,7 @@ median_ecg_noise, ecg_noise_Rpeak_index = getRpeak.getRpeak_shannon(ecg_noise_mV
 
 # Validation Data
 
-url_data = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/ClipSituation_eachN/N23/Baseline.csv'
+url_data = '/Users/weien/Documents/GitHub/Stress_Detection_python/Data/ClipSituation_CSVfile/N23/Baseline.csv'
 df_data = pd.read_csv(url_data)
 ecg=df_data['ECG']
 ecg_clip = ecg[0:500]
@@ -94,7 +94,7 @@ print('Clean RMS:{}'.format(round(input_cleanecg_score,2)))
 
 
 
-url_data = '/Users/weien/Desktop/ECG穿戴/實驗二_人體壓力/DataSet/ClipSituation_eachN/驗證資料/Shake_shoulder.csv'
+url_data = '/Users/weien/Documents/GitHub/Stress_Detection_python/Data/ClipSituation_CSVfile/Validation_Data/Shake_shoulder.csv'
 df_data = pd.read_csv(url_data)
 ecg_noise=df_data['ECG'][1000:1500]
 ecg_cnoiseinput_mV = (((np.array(ecg_noise))*1.8/65535-lta3_baseline)/lta3_magnification)*1000
@@ -125,7 +125,7 @@ plt.yticks(fontsize=14)
 
 plt.subplot(4,1,2)
 plt.plot(x_time, median_ecg_noise ,c='black')
-plt.scatter(np.array(ecg_noise_Rpeak_index)/fs, median_ecg_noise[ecg_noise_Rpeak_index], alpha=0.5, c='steelblue')
+plt.scatter(np.array(ecg_noise_Rpeak_index)/fs, median_ecg_noise[ecg_noise_Rpeak_index], alpha=0.8, c='steelblue')
 ax = plt.gca()
 ax.get_xaxis().set_visible(False)
 ax.ticklabel_format(style='sci', scilimits=(-1,2), axis='y')
@@ -137,7 +137,7 @@ plt.yticks(fontsize=14)
 
 plt.subplot(4,1,3)
 plt.plot(x_time, ecg_median_inputclean, color='black')
-plt.scatter(np.array(clean_redetect_Rpeak_index)/fs, ecg_median_inputclean[clean_redetect_Rpeak_index], color='steelblue', alpha=0.5)
+plt.scatter(np.array(clean_redetect_Rpeak_index)/fs, ecg_median_inputclean[clean_redetect_Rpeak_index], color='steelblue', alpha=0.8)
 plt.ylim(-2, 2)
 plt.xlim(0,2)
 ax = plt.gca()
@@ -149,7 +149,7 @@ plt.yticks(fontsize=14)
 
 plt.subplot(4,1,4)
 plt.plot(x_time, ecg_median_inputnoise, color='black')
-plt.scatter(np.array(noise_redetect_Rpeak_index)/fs, ecg_median_inputnoise[noise_redetect_Rpeak_index], color='steelblue', alpha=0.5)
+plt.scatter(np.array(noise_redetect_Rpeak_index)/fs, ecg_median_inputnoise[noise_redetect_Rpeak_index], color='steelblue', alpha=0.8)
 plt.ylim(-2, 2)
 plt.xlim(0,2)
 plt.title('Input noisy ECG', fontsize=16)
@@ -161,13 +161,14 @@ plt.yticks(fontsize=14)
 
 plt.tight_layout()
 
-plt.savefig('/Users/weien/Desktop/論文圖/Noisy.png', dpi=800)
+plt.savefig('Noisy.png', dpi=800)
 
 
 #%% Reference methods: measure statistic SQI (Leave the bandpass filter(5-30) as noise signal)
 
 # measure skewness and kurtosis
 
+'''
 url = '/Users/weien/Desktop/ECG穿戴/HRV實驗/狗/Dataset/2110Nimo/scared.csv'
 # url = '/Users/weien/Desktop/人體壓力測試/220426陳云/Stroop+Radio.csv'
 situation = 'scared'
@@ -275,7 +276,7 @@ print('sqi_kur: {}'.format(round(sqi_kur,3)))
 # plt.xlim(-1,1)
 # plt.ylim(0,200)
 # plt.legend()
-
+'''
 
 
 

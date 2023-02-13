@@ -491,12 +491,17 @@ def getRpeak_shannon(ecg, fs, medianfilter_size, gaussian_filter_sigma, moving_a
     
     detect_Rpeak_index = []
     
-    for i in range(len(detect_maxRpeak_index)):
-        if (np.abs(detect_maxRpeak_index[i]) >= np.abs(detect_minRpeak_index)).all():
-            detect_Rpeak_index.append(detect_maxRpeak_index[i])
-        elif (np.abs(detect_maxRpeak_index[i]) < np.abs(detect_minRpeak_index)).all():
-            detect_Rpeak_index.append(detect_minRpeak_index[i])
+    # Methid1: All choose high
+    detect_Rpeak_index = detect_maxRpeak_index
     
+    # Method2: One epoch comparing high or low
+    # for i in range(len(detect_maxRpeak_index)):
+    #     if (np.abs(detect_maxRpeak_index[i]) >= np.abs(detect_minRpeak_index)).all():
+    #         detect_Rpeak_index.append(detect_maxRpeak_index[i])
+    #     elif (np.abs(detect_maxRpeak_index[i]) < np.abs(detect_minRpeak_index)).all():
+    #         detect_Rpeak_index.append(detect_minRpeak_index[i])
+    
+    # Method 3: Each data comparing high or low
     # maxRpeak_sum = np.sum(np.abs(ecg[detect_maxRpeak_index]))
     # minRpeak_sum = np.sum(np.abs(ecg[detect_minRpeak_index]))
         
