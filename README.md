@@ -21,18 +21,18 @@ There were three algorithm were develpoed:
 |  ----  | ----  | ---- |
 | 1 | $RR_{Mean}$ | Mean of R-R intervals|
 | 2 | $SD$ | Standard deviation of R-R intervals |
-| 3 | RMSSD | Root mean square of successive differences of R-R intervals |
-| 4 | N$N_50$ | Number of interval differences of successive R-R intervals greater than 50ms |
-| 5 | pNN50 | Corresponding percentage of NN50 |
-| 6 | RRSkew | Skewness of R-R intervals |
-| 7 | RRKurt | Kurtosis of R-R intervals |
-| 8 | TP | Total power (0-0.4 Hz) |
-| 9 | HF | High frequency power (0.15-0.4 Hz) |
-| 10 | LF | Low frequency power (0.04–0.15 Hz) |
-| 11 | VLF | Very low frequency power (0.003–0.04 Hz) |
-| 12 | LF/HF | A ratio of low Frequency to high frequency |
-| 13 | HF% | Normalized HF [HF / (TP - VLF) *100] |
-| 14 | LF% | Normalized LF [LF / (TP - VLF) *100] |
+| 3 | $RMSSD$ | Root mean square of successive differences of R-R intervals |
+| 4 | $NN_{50}$ | Number of interval differences of successive R-R intervals greater than 50ms |
+| 5 | $pNN_{50}$ | Corresponding percentage of NN50 |
+| 6 | $RR_{Skew}$ | Skewness of R-R intervals |
+| 7 | $RR_{Kurt}$ | Kurtosis of R-R intervals |
+| 8 | $TP$ | Total power (0-0.4 Hz) |
+| 9 | $HF$ | High frequency power (0.15-0.4 Hz) |
+| 10 | $LF$ | Low frequency power (0.04–0.15 Hz) |
+| 11 | $VLF$ | Very low frequency power (0.003–0.04 Hz) |
+| 12 | $LF/HF$ | A ratio of low Frequency to high frequency |
+| 13 | $HF%$ | Normalized HF [HF / (TP - VLF) *100] |
+| 14 | $LF%$ | Normalized LF [LF / (TP - VLF) *100] |
 
 ## EMG
 7 numbers of features extracted from EMG
@@ -41,9 +41,9 @@ There were three algorithm were develpoed:
 | N  | Symbol | Feature description |
 |  ----  | ----  | ---- |
 | 1 | $RMS_{EMG}$ | Root mean square of electromyogram|
-| 2 | MAVEMG | Mean absolute value |
-| 3 | VAREMG | Variance |
-| 4 | EnergyEMG | Energy |
-| 5 | ZCEMG | Zero crossing |
-| 6 | MNF | Mean Frequency |
-| 7 | MDF | Median Frequency |
+| 2 | $MAV_{EMG}$ | Mean absolute value |
+| 3 | $VAR_{EMG}$ | Variance |
+| 4 | $Energy_{EMG}$ | Energy |
+| 5 | $ZC_{EMG}$ | Zero crossing |
+| 6 | $MNF$ | Mean Frequency |
+| 7 | $MDF$ | Median Frequency |
