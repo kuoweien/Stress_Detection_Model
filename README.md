@@ -20,7 +20,7 @@ There were three algorithm were develpoed:
 | N  | Symbol | Feature description |
 |  ----  | ----  | ---- |
 | 1 | $RR_{Mean}$ | Mean of R-R intervals|
-| 2 | SD | Standard deviation of R-R intervals |
+| 2 | $SD$ | Standard deviation of R-R intervals |
 | 3 | RMSSD | Root mean square of successive differences of R-R intervals |
 | 4 | N$N_50$ | Number of interval differences of successive R-R intervals greater than 50ms |
 | 5 | pNN50 | Corresponding percentage of NN50 |
