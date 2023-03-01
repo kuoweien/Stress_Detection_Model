@@ -51,11 +51,11 @@ Reading the raw file.
 ## Files for drawing images
 * forpicture_devideECGandEMG.py
 The result of the algorithm: separation of EMG from ECG algorithm.
-![divideECGandEMG](https://user-images.githubusercontent.com/25921591/222200852-1a1bce8b-3b1e-4447-abbe-4c87726efbdf.png)
+![divideECGandEMG](https://user-images.githubusercontent.com/25921591/222200852-1a1bce8b-3b1e-4447-abbe-4c87726efbdf.png | width=100)
 
 * forpicture_shannon.py
 The process of the algorithm: R peak detection (Adjust from the present study. (Manikandan et al., 2012). )
-![SEE](https://user-images.githubusercontent.com/25921591/222200887-cd8df1d3-04b8-45b7-b2f8-1f71920c8fff.png)
+![SEE](https://user-images.githubusercontent.com/25921591/222200887-cd8df1d3-04b8-45b7-b2f8-1f71920c8fff.png | width=100)
 
 # Signal preprocessing
 <img width="240" alt="image" src="https://user-images.githubusercontent.com/25921591/222178747-9e10052f-998a-466b-9828-b80f6e1e419a.png">
