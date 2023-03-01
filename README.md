@@ -89,8 +89,9 @@ pip install matplotlib
 
 # Feature extraction
 ## ECG (HRV)
-14 numbers heart rate variability (HRV) features extracted from ECG
-7 from the time domain, and 7 from the frequency domain
+14 numbers heart rate variability (HRV) features extracted from ECG.
+
+7 from the time domain, and 7 from the frequency domain.
 
 | N  | Symbol | Feature description |
 |  ----  | ----  | ---- |
@@ -110,8 +111,9 @@ pip install matplotlib
 | 14 | $LF%$ | Normalized LF [LF / (TP - VLF) *100] |
 
 ## EMG
-7 numbers features extracted from EMG
-5 from the time domain, and 2 from the frequency domain
+7 numbers features extracted from EMG.
+
+5 from the time domain, and 2 from the frequency domain.
 
 | N  | Symbol | Feature description |
 |  ----  | ----  | ---- |
