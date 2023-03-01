@@ -19,7 +19,7 @@ There were three algorithm were develpoed:
 
 | N  | Symbol | Feature description |
 |  ----  | ----  | ---- |
-| 1 | $RR_Mean$ | Mean of R-R intervals|
+| 1 | $RR_{Mean}$ | Mean of R-R intervals|
 | 2 | SD | Standard deviation of R-R intervals |
 | 3 | RMSSD | Root mean square of successive differences of R-R intervals |
 | 4 | N$N_50$ | Number of interval differences of successive R-R intervals greater than 50ms |
@@ -40,7 +40,7 @@ There were three algorithm were develpoed:
 
 | N  | Symbol | Feature description |
 |  ----  | ----  | ---- |
-| 1 | $RMS_EMG$ | Root mean square of electromyogram|
+| 1 | $RMS_{EMG}$ | Root mean square of electromyogram|
 | 2 | MAVEMG | Mean absolute value |
 | 3 | VAREMG | Variance |
 | 4 | EnergyEMG | Energy |
