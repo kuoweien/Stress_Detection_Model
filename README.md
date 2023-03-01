@@ -14,8 +14,22 @@ There were three algorithm were develpoed:
 
 # Feature extraction
 14 numbers of heart rate variability (HRV) parameters calculated from ECG
+7 from time domain, and 7 from frequency domain
+
 | N  | Symbol | Feature description |
 |  ----  | ----  | ---- |
-| 1 | RRMean | Mean of R-R intervals|
+| 1 | $RR_Mean$ | Mean of R-R intervals|
 | 2 | SD | Standard deviation of R-R intervals |
+| 3 | RMSSD | Root mean square of successive differences of R-R intervals |
+| 4 | NN50 | Number of interval differences of successive R-R intervals greater than 50ms |
+| 5 | SD | Standard deviation of R-R intervals |
+| 6 | SD | Standard deviation of R-R intervals |
+| 7 | SD | Standard deviation of R-R intervals |
+| 8 | SD | Standard deviation of R-R intervals |
+| 9 | SD | Standard deviation of R-R intervals |
+| 10 | SD | Standard deviation of R-R intervals |
+| 11 | SD | Standard deviation of R-R intervals |
+| 12 | SD | Standard deviation of R-R intervals |
+| 13 | SD | Standard deviation of R-R intervals |
+| 14 | SD | Standard deviation of R-R intervals |
 
