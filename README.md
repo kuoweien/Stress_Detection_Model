@@ -22,14 +22,14 @@ There were three algorithm were develpoed:
 | 2 | SD | Standard deviation of R-R intervals |
 | 3 | RMSSD | Root mean square of successive differences of R-R intervals |
 | 4 | NN50 | Number of interval differences of successive R-R intervals greater than 50ms |
-| 5 | SD | Standard deviation of R-R intervals |
-| 6 | SD | Standard deviation of R-R intervals |
-| 7 | SD | Standard deviation of R-R intervals |
-| 8 | SD | Standard deviation of R-R intervals |
-| 9 | SD | Standard deviation of R-R intervals |
-| 10 | SD | Standard deviation of R-R intervals |
-| 11 | SD | Standard deviation of R-R intervals |
-| 12 | SD | Standard deviation of R-R intervals |
-| 13 | SD | Standard deviation of R-R intervals |
-| 14 | SD | Standard deviation of R-R intervals |
+| 5 | pNN50 | Corresponding percentage of NN50 |
+| 6 | RRSkew | Skewness of R-R intervals |
+| 7 | RRKurt | Kurtosis of R-R intervals |
+| 8 | TP | Total power (0-0.4 Hz) |
+| 9 | HF | High frequency power (0.15-0.4 Hz) |
+| 10 | LF | Low frequency power (0.04–0.15 Hz) |
+| 11 | VLF | Very low frequency power (0.003–0.04 Hz) |
+| 12 | LF/HF | A ratio of low Frequency to high frequency |
+| 13 | HF% | Normalized HF [HF / (TP - VLF) *100] |
+| 14 | LF% | Normalized LF [LF / (TP - VLF) *100] |
 
