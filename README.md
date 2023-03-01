@@ -8,14 +8,62 @@ There were three algorithm were develpoed:
 * R peak detection
 * Separation of EMG from ECG algorithm
 
+# Languages
+Python 3.8.8
 
-# Signal prepocessing
+# Installation
+Use the package manager pip to install numpy.
+```bash
+pip install numpy
+```
+Use the package manager pip to install pandas.
+```bash
+pip install pandas
+```
+
+# How to use this project
+## Main files
+*readandclip_Rawdata.py
+Read and decode the raw file, and clip the signal according to the time of the experiment. Then restore the data as a CSV file.
+*getFeatures_TimeDomain.py
+Extract the features from the time domain of ECG and EMG signals. The epoch of signals was 30 seconds. The description of the features is shown below (title: Feature extraction)
+*getFeatures_FrequencyDomain.py
+Extract the features from the frequency domain of ECG and EMG signals. The epoch of signals was 150 seconds and overlapped 80%.
+*validation_RpeakAlgo_fromMIT-BIH.py
+Using MIT-BIH Database to validation the R peak detection we developed.
+*machine_learning.py
+There were six models: Support Vector Machine、Random forest, Regression, Decision tree, Random forest regression, and Xgboost. The method of validation has a confusion matrix, AUC, Accuracy, Kappa, Sensitivity, Precision, and F1-score.
+*signalNoise_SQIthreshold.py
+Find the threshold of signal quality indices, and measure the indices of input signals.
+*statistic_analyze.py
+Including checking whether the data is normal or unnormal, T-test, Mann Whitney U test, Paired T-Test, Wilcoxon Signed-Rank Test, Pearson correlation, and Spearman correlation.
+
+## Functional files
+* def_dataDecode.py
+The code for decoding raw file
+* def_getRpeak_main.py
+Including the Pantompkin Algorithm (Pan, J. and W.J. Tompkins, 1985) and the Shannon envelope algorithm (Manikandan et al., 2012). 
+*def_measureSQI.py
+Measure the SQI (epoch was 2 seconds).
+* def_readandget_Rawdata.py
+Reading the raw file.
+
+## Files for drawing images
+* forpicture_devideECGandEMG.py
+The result of the algorithm: separation of EMG from ECG algorithm.
+![divideECGandEMG](https://user-images.githubusercontent.com/25921591/222200852-1a1bce8b-3b1e-4447-abbe-4c87726efbdf.png)
+
+* forpicture_shannon.py
+The process of the algorithm: R peak detection (Adjust from the present study. (Manikandan et al., 2012). )
+![SEE](https://user-images.githubusercontent.com/25921591/222200887-cd8df1d3-04b8-45b7-b2f8-1f71920c8fff.png)
+
+# Signal preprocessing
 <img width="240" alt="image" src="https://user-images.githubusercontent.com/25921591/222178747-9e10052f-998a-466b-9828-b80f6e1e419a.png">
 
 # Feature extraction
 ## ECG (HRV)
-14 numbers of heart rate variability (HRV) features extracted from ECG
-7 from time domain, and 7 from frequency domain
+14 numbers heart rate variability (HRV) features extracted from ECG
+7 from the time domain, and 7 from the frequency domain
 
 | N  | Symbol | Feature description |
 |  ----  | ----  | ---- |
@@ -35,8 +83,8 @@ There were three algorithm were develpoed:
 | 14 | $LF%$ | Normalized LF [LF / (TP - VLF) *100] |
 
 ## EMG
-7 numbers of features extracted from EMG
-5 from time domain, and 2 from frequency domain
+7 numbers features extracted from EMG
+5 from the time domain, and 2 from the frequency domain
 
 | N  | Symbol | Feature description |
 |  ----  | ----  | ---- |
@@ -47,3 +95,6 @@ There were three algorithm were develpoed:
 | 5 | $ZC_{EMG}$ | Zero crossing |
 | 6 | $MNF$ | Mean Frequency |
 | 7 | $MDF$ | Median Frequency |
+
+#Conclusion
+This project had more focus on signal preprocessing before training the machine learning model. We can reduce the number of sensors and have high accuracy for psychological stress detection.
