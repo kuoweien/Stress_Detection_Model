@@ -12,3 +12,10 @@ There were three algorithm were develpoed:
 # Signal prepocessing
 <img width="240" alt="image" src="https://user-images.githubusercontent.com/25921591/222178747-9e10052f-998a-466b-9828-b80f6e1e419a.png">
 
+# Feature extraction
+14 numbers of heart rate variability (HRV) parameters calculated from ECG
+| N  | Symbol | Feature description |
+|  ----  | ----  | ---- |
+| 1 | RRMean | Mean of R-R intervals|
+| 2 | SD | Standard deviation of R-R intervals |
+
