@@ -55,7 +55,7 @@ def linearFunc(start,end): # EX: a=linearFunc([3,2],[7,4])
 def defivative(data_y):
     x=range(len(data_y))
     
-    dy = np.zeros(data_y.shape,np.float)
+    dy = np.zeros(data_y.shape, float)
     dy[0:-1] = np.diff(data_y)/np.diff(x) #每一格的斜率 diff是前後相減  [0:-1]是最後一個不取(i.e.從0取到倒數第二個)
     dy[-1] = (data_y[-1] - data_y[-2])/(x[-1] - x[-2])
     
@@ -248,7 +248,7 @@ def findMinvalue(rawdata, rpeak_x, range_n): #因前面會抓錯 所以直接找
             range_list = rawdata[rpeak_x[i]-int(range_n/2):rpeak_x[i]+int(range_n/2)]
         
         min_location = range_list.nsmallest(1) #Series取最小值 取最大值為nlargest 最小值為nsmallest
-        newrpeak = newrpeak.append(min_location)
+        newrpeak = newrpeak._append(min_location)
 
     newdetedted_rpeak_x = newrpeak.index.values.tolist() 
     newdetedted_rpeak_y = newrpeak.tolist()
@@ -270,7 +270,7 @@ def findMaxvalue(rawdata, rpeak_x, range_n): #Decision rule找最大值(因前�
             range_list = rawdata[rpeak_x[i]-int(range_n/2):rpeak_x[i]+int(range_n/2)]
         
         min_location = range_list.nlargest(1) #Series取最小值 取最大值為nlargest 最小值為nsmallest    
-        newrpeak = newrpeak.append(min_location)
+        newrpeak = newrpeak._append(min_location)
 
     newdetedted_rpeak_x = newrpeak.index.values.tolist() 
     newdetedted_rpeak_y = newrpeak.tolist()
