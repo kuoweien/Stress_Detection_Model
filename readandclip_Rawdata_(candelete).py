@@ -68,22 +68,20 @@ for i in columns:
 
     start_time = time.split('-')[0]
     start_time_datetime = datetime.datetime.strptime(start_time, '%H:%M:%S')
-    start_time = (start_time_datetime+datetime.timedelta(seconds = adjust_totalseconds)).strftime('%H:%M:%S')
-
+    start_time = (start_time_datetime+datetime.timedelta(seconds=adjust_totalseconds)).strftime('%H:%M:%S')
     
     end_time = time.split('-')[1]
     end_time_datetime = datetime.datetime.strptime(end_time, '%H:%M:%S')
-    end_time = (end_time_datetime+datetime.timedelta(seconds = adjust_totalseconds)).strftime('%H:%M:%S')
+    end_time = (end_time_datetime+datetime.timedelta(seconds=adjust_totalseconds)).strftime('%H:%M:%S')
     
+    ecg_condition = def_readandget_Rawdata.inputtimetoClipRawdata(ecg_raw, fs, updatetime, start_time, end_time)  # 取時間
     
-    ecg_condition = def_readandget_Rawdata.inputtimetoClipRawdata(ecg_raw, fs, updatetime, start_time ,end_time) #取時間
-    
-    df = pd.DataFrame({'ECG':ecg_condition})
+    df = pd.DataFrame({'ECG': ecg_condition})
     outputurl = 'Data/ClipSituation_CSVfile/N{}/{}.csv'.format(n, i)
     df.to_csv(outputurl)
     
-    plt.figure(figsize=(12,2))
-    plt.plot(ecg_condition ,'black')
+    plt.figure(figsize=(12, 2))
+    plt.plot(ecg_condition, 'black')
     plt.title(i)
 
 

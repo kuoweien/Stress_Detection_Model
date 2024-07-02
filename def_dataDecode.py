@@ -132,7 +132,7 @@ class dataDecode:
                         Data[channel[j]].append(Raw_Data[i+j])
         return Data, SR_array, timestr
     
-#%%
+
 
 
 
