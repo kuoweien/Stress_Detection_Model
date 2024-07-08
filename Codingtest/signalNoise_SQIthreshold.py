@@ -8,7 +8,7 @@ Created on Wed May 25 16:53:56 2022
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import def_getRpeak_main as getRpeak
+import Library.def_getRpeak_main as getRpeak
 import math
 
 
@@ -27,7 +27,7 @@ def ecgEpochScore(ecg):
 #%% Add white noise to define SQI threshold
 
 fs = 250
-gaussian_filter_sigma =  0.03*fs 
+gaussian_filter_sigma = 0.03*fs
 medianfilter_size = 61
 moving_average_ms = 2.5 
 final_shift = 0 

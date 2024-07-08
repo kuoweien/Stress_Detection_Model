@@ -6,7 +6,7 @@ Created on Tue Oct 22 09:15:13 2019
 """
 
 import math
-from datetime import datetime,timedelta
+from datetime import datetime, timedelta
 
 class dataDecode:
     def HeaderDataDecode(rawtxt):

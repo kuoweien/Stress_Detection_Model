@@ -11,7 +11,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import def_getRpeak_main as getRpeak
 import def_measureSQI as measureSQI
-from scipy.interpolate import interp1d # 導入 scipy 中的一維插值工具 interp1d
+from scipy.interpolate import interp1d  # 導入 scipy 中的一維插值工具 interp1d
 import math
 
 
@@ -87,8 +87,8 @@ def get_timedomian_features(n):
                 rri_pnn50 = rri_nn50 / len(re_rrinterval)
 
             # ------EMG features--------
-            emg_mv_linearwithzero, _ = getRpeak.deleteRTpeak(median_ecg, rpeakindex, qrs_range, tpeak_range)  # 刪除rtpeak並補0
-            emg_mv_deletezero = getRpeak.deleteZero(emg_mv_linearwithzero)
+            emg_mv_linearwithzero, _ = getRpeak.delete_rtpeak(median_ecg, rpeakindex, qrs_range, tpeak_range)  # 刪除rtpeak並補0
+            emg_mv_deletezero = getRpeak.delete_zero(emg_mv_linearwithzero)
             emg_rms = np.sqrt(np.mean(emg_mv_deletezero ** 2))
             emg_var = np.var(emg_mv_deletezero)
             emg_mav = np.sqrt(np.mean(np.abs(emg_mv_deletezero)))

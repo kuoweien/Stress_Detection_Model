@@ -1,7 +1,7 @@
 
 import pandas as pd
-import TimeDomainSelection
-import FrequencyDomainSelection
+import Library.TimeDomainSelection as TimeDomainSelection
+import Library.FrequencyDomainSelection as FrequencyDomainSelection
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -29,9 +29,14 @@ if __name__ == '__main__':
         df_oneN_timedomain = TimeDomainSelection.get_timedomian_features(n)
         df_timedomian_features = pd.concat([df_timedomian_features, df_oneN_timedomain], axis=0)
 
+
         print('!Start extracting frequency domain features!')
         df_oneN_fqdomian = FrequencyDomainSelection.get_frequencydomian_features(n)
         df_frequencydomian_features = pd.concat([df_frequencydomian_features, df_oneN_fqdomian], axis=0)
+
+    print()
+    print(df_timedomian_features.head())
+    print(df_frequencydomian_features.head())
 
 
 

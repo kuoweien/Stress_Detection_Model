@@ -365,7 +365,7 @@ def fill_rtpeak_bylinear(signal, rpeakindex, qrs_range, tpeak_range):
 
 def delete_rtpeak(signal, rpeakindex, qrs_range, tpeak_range):  # qrs_range, tpeak_range須為int
     """
-    取得EMG，刪除RT波，且不補點
+    取得EMG，刪除RT波，且補點為0，為計算RMS
     input: qrs_range [int], tpeak_range [int]
     """
     emg_nolinear = signal
@@ -410,6 +410,12 @@ def delete_rtpeak(signal, rpeakindex, qrs_range, tpeak_range):  # qrs_range, tpe
 
 
 '''--------6. Def function for Statistics-------'''
+def delete_zero(data):  # 刪除0值
+    df = pd.DataFrame({'data': data})
+    df_withoutzero = df[df['data'] != 0]
+    data_withoutzero = df_withoutzero['data']
+    return data_withoutzero
+
 def calc(data):
     """
     計算期望值和方差
@@ -469,7 +475,7 @@ def getRpeak_pantompskin(ecg, fs):
     
     return ecg_median, final_rpeak_x
 
-def getRpeak_shannon(ecg, fs):
+def getRpeak_shannon(ecg, fs, relocated_rpeak_method="all_choose_max"):
     """
     使用Shonnon取Rpeak
     input:
@@ -484,7 +490,7 @@ def getRpeak_shannon(ecg, fs):
     detectR_maxvalue_range = (0.32 * fs) * 2
     rpeak_close_range = 0.15 * fs
     detect_Rpeak_index = []
-    relocated_rpeak_method = 'all_choose_max'  # all_choose_max, oneepoch_choose_highorlow, onebeat_choose_highorlow
+    #relocated_rpeak_method = 'all_choose_max'  # all_choose_max, oneepoch_choose_highorlow, onebeat_choose_highorlow
     '''
     校正rpeak位置的方法:
     M1: all_choose_max, All choose high amplitude
@@ -516,16 +522,17 @@ def getRpeak_shannon(ecg, fs):
     # Relocated r peak
     if relocated_rpeak_method == 'all_choose_max':
         detect_Rpeak_index = detect_maxRpeak_index
+
     elif relocated_rpeak_method == 'oneepoch_choose_highorlow':
         for i in range(len(detect_maxRpeak_index)):
             if (np.abs(detect_maxRpeak_index[i]) >= np.abs(detect_minRpeak_index)).all():
                 detect_Rpeak_index.append(detect_maxRpeak_index[i])
             elif (np.abs(detect_maxRpeak_index[i]) < np.abs(detect_minRpeak_index)).all():
                 detect_Rpeak_index.append(detect_minRpeak_index[i])
+
     elif relocated_rpeak_method == 'onebeat_choose_highorlow':
         maxRpeak_sum = np.sum(np.abs(ecg[detect_maxRpeak_index]))
         minRpeak_sum = np.sum(np.abs(ecg[detect_minRpeak_index]))
-
         if maxRpeak_sum >= minRpeak_sum:
             detect_Rpeak_index = detect_maxRpeak_index
         elif minRpeak_sum > maxRpeak_sum:

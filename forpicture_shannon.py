@@ -8,7 +8,7 @@ Created on Mon Aug 15 19:51:44 2022
 
 import pandas as pd
 import matplotlib.pyplot as plt
-import def_getRpeak_main as def_getRpeak
+import Library.def_getRpeak_main as def_getRpeak
 import numpy as np
 
 fs = 250

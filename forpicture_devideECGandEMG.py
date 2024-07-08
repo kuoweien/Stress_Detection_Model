@@ -9,7 +9,7 @@ Created on Tue Aug 16 10:42:46 2022
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import def_getRpeak_main as getRpeak
+import Library.def_getRpeak_main as getRpeak
 '''
 fs=250
 lta3_baseline = 0.9

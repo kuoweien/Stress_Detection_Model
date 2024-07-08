@@ -9,7 +9,6 @@ from scipy import stats
 import numpy as np
 from scipy.stats import mannwhitneyu
 import pandas as pd
-# import scipy.stats as stats
 import seaborn as sns
 
 #看是否常態

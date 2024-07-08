@@ -10,9 +10,9 @@ import pandas as pd
 import numpy as np
 import def_getRpeak_main as getRpeak
 import matplotlib.pyplot as plt
-from scipy.interpolate import interp1d # 導入 scipy 中的一維插值工具 interp1d
+from scipy.interpolate import interp1d  # 導入 scipy 中的一維插值工具 interp1d
 import scipy.fft
-import def_readandget_Rawdata
+import transfer_rawdata_tocsv
 import def_measureSQI as measureSQI
 
 def interpolate(signal, output_signal_len):   # signal:原始訊號, output_signal_len:產生為多少長度之訊號
@@ -198,15 +198,15 @@ def get_frequencydomian_features(n):
     columns_index = [baseline_strart_index, stroop_start_index, arithmetic_start_index, speech_start_index]
 
     # Run for situations
-    for situation in range(len(situations)):
+    for s in range(len(situations)):
 
         # Run for epochs
         for i in range(0, int(situation_time / slidingwidow_len)):
-            print('Paricipant:{} Situation: {} Epoch:{}'.format(n, situations[situation], i))
+            print('Paricipant:{} Situation: {} Epoch:{}'.format(n, situations[s], i))
 
             # overlapping: (i*slidingwidow_len*fs), sliding window: (2.5*minute_to_second*fs)
-            input_ecg = ecg_mV[columns_index[situation] + (i * slidingwidow_len * fs): int(
-                (columns_index[situation] + (2.5 * minute_to_second * fs)) + (i * slidingwidow_len * fs))]
+            input_ecg = ecg_mV[columns_index[s] + (i * slidingwidow_len * fs): int(
+                (columns_index[s] + (2.5 * minute_to_second * fs)) + (i * slidingwidow_len * fs))]
             # Get R peak from ECG by using shannon algorithm
             median_ecg, rpeakindex = getRpeak.getRpeak_shannon(input_ecg, fs)
 
@@ -235,7 +235,7 @@ def get_frequencydomian_features(n):
                 rrinterval_resample_zeromean = rrinterval_resample - np.mean(rrinterval_resample)
 
                 # 刪除RTpeak，並以差值補點結果視為EMG
-                emg_mV_linearwithzero, _ = getRpeak.deleteRTpeak(median_ecg, rpeakindex, qrs_range, tpeak_range)  # 刪除rtpeak並補0
+                emg_mV_linearwithzero, _ = getRpeak.delete_rtpeak(median_ecg, rpeakindex, qrs_range, tpeak_range)  # 刪除rtpeak並補0
 
                 # Get frequency domain by using FFT
                 y_f_ECG, x_f_ECG = fft_power(rrinterval_resample_zeromean, rr_resample_rate, 'hanning')
@@ -265,7 +265,7 @@ def get_frequencydomian_features(n):
                 mdf_median_index = (np.where(y_f_EMG_integral > np.max(y_f_EMG_integral) / 2))[0][0]  # Array is bigger than (under area)/2
                 mdf = x_f_EMG[mdf_median_index]
 
-                df_now_fqdomain = pd.DataFrame({'N': n, 'Epoch': i + 1, 'Situation': situation,
+                df_now_fqdomain = pd.DataFrame({'N': n, 'Epoch': i + 1, 'Situation': situations[s],
                   'TP': tp_log, 'HF': hf_log, 'LF': lf_log, 'VLF': vlf_log,
                   'nLF': nlF, 'nHF': nhf, 'LF/HF': lfhf_ratio_log,
                   'MNF': mnf, 'MDF': mdf}, index=[0])
