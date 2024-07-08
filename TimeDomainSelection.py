@@ -32,14 +32,6 @@ def get_timedomian_features(n):
     lta3_magnification = 250
 
     # Parameters of detecting R peak
-    medianfilter_size = 61
-    gaussian_filter_sigma = 0.03 * fs
-    moving_average_ms = 2.5
-    final_shift = 0  # Hibert轉換找到交零點後需再位移回來 0.1*fs (int(0.05*fs))
-    detectR_maxvalue_range = (0.32 * fs) * 2  # 草哥使用(0.3*fs)*2 #Patch=0.4*fs*2 LTA3=0.35*fs*2
-    rpeak_close_range = 0.15 * fs
-    lowpass_fq = 20
-    highpass_fq = 10
     situation_time = 300  # sec
     epoch_time = 30  # sec
 
@@ -69,9 +61,7 @@ def get_timedomian_features(n):
             ecg_mV = (((np.array(ecg_nonoise_mV)) * 1.8 / 65535 - lta3_baseline) / lta3_magnification) * 1000
 
             # get R peak location
-            median_ecg, rpeakindex = getRpeak.getRpeak_shannon(ecg_mV, fs, medianfilter_size, gaussian_filter_sigma,
-                                                               moving_average_ms, final_shift, detectR_maxvalue_range,
-                                                               rpeak_close_range)
+            median_ecg, rpeakindex = getRpeak.getRpeak_shannon(ecg_mV, fs)
 
             # ------ECG (RRI) features--------
             if len(rpeakindex) <= 2:  # 排除: 若只抓到小於等於2點的Rpeak，會無法算HRV參數，因此將參數設為0

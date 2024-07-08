@@ -174,14 +174,6 @@ def get_frequencydomian_features(n):
     # SQI
     checknoise_threshold = 20
 
-    # Parameters of r peak detection
-    medianfilter_size = 61
-    gaussian_filter_sigma = 0.03 * fs
-    moving_average_ms = 2.5
-    final_shift = 0
-    detectR_max_range = (0.32 * fs) * 2
-    rpeak_close_range = 0.4 * fs  # 0.1*fs
-
     # Parameters of EMG
     qrs_range = int(0.32 * fs)  # Human: int(0.32*fs)
     tpeak_range = int(0.2 * fs)  # Human: int(0.2*fs)
@@ -216,9 +208,7 @@ def get_frequencydomian_features(n):
             input_ecg = ecg_mV[columns_index[situation] + (i * slidingwidow_len * fs): int(
                 (columns_index[situation] + (2.5 * minute_to_second * fs)) + (i * slidingwidow_len * fs))]
             # Get R peak from ECG by using shannon algorithm
-            median_ecg, rpeakindex = getRpeak.getRpeak_shannon(input_ecg, fs, medianfilter_size, gaussian_filter_sigma,
-                                                               moving_average_ms, final_shift, detectR_max_range,
-                                                               rpeak_close_range)
+            median_ecg, rpeakindex = getRpeak.getRpeak_shannon(input_ecg, fs)
 
             # ------ECG (RRI) features--------
             if len(rpeakindex) <= 2:  # 若只取到<=2點的Rpeak，會無法算HRV參數，因此將參數設為0

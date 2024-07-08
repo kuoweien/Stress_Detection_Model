@@ -78,7 +78,7 @@ df_parameter = pd.DataFrame()
 df_rrresult = pd.DataFrame()
 
 
-for index in range(5,6):
+for index in range(5, 6):
     
     clip_start = (index*(length_s*fs)) #scared 2500 #petted 10000
     clip_end = ((index+1)*(length_s*fs)) #scared 5000 #petted 12500
@@ -128,7 +128,7 @@ for index in range(5,6):
     ecg_median = rawdata_mV-median_adjustline  #基線飄移
     rawdata_mV = ecg_median
     ecg_lowpass=bandfilter.lowPassFilter(lowpass,ecg_median)        #低通
-    ecg_bandpass = bandfilter.highPassFilter(highpass,ecg_lowpass)        #高通
+    ecg_bandpass = bandfilter.highpass_filter(highpass,ecg_lowpass)        #高通
     ecg_defivative = pantompkin.defivative(ecg_bandpass)       #導數
     ecg_square = np.square(ecg_defivative)       #平方
     peaks_x, peaks_y = pantompkin.findpeak(ecg_square)

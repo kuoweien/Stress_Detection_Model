@@ -194,7 +194,7 @@ for index in range(0,12):
     median_filter_data = getRpeak.medfilt(np.array(rawdata_mV), medianfilter_size)
     rawdata_mV_medianfilter = rawdata_mV - median_filter_data
     lowpass_data = getRpeak.lowPassFilter(lowpass_fs, rawdata_mV_medianfilter)  #低通
-    bandfilter_data = getRpeak.highPassFilter(highpass_fs, lowpass_data)    #高通
+    bandfilter_data = getRpeak.highpass_filter(highpass_fs, lowpass_data)    #高通
     
     signal = bandfilter_data
     noise = rawdata_mV-bandfilter_data
