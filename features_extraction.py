@@ -1,3 +1,8 @@
+"""
+Created on Thu Jul 2 10:00:00 2024
+
+@author: weien
+"""
 
 import pandas as pd
 import Library.TimeDomainSelection as TimeDomainSelection
