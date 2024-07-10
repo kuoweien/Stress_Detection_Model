@@ -9,8 +9,8 @@ Created on Thu Mar 10 14:23:50 2022
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import def_getRpeak_main as getRpeak
-import def_measureSQI as measureSQI
+import Library.def_getRpeak_main as getRpeak
+import Library.def_measureSQI as measureSQI
 from scipy.interpolate import interp1d  # 導入 scipy 中的一維插值工具 interp1d
 import math
 

@@ -259,67 +259,70 @@ def checkisNormal(value):
 
 #%%
 if __name__ == '__main__':
-    ###2024/07/08 還未整理
+
+    ### Note: 2024/07/10 未來要再把畫圖寫成Function
+
+    # -------------
+
+    inputfile_url = 'Data/Features/240710_Features.csv'
+    is_resample = False
+
+    select_features = 'Corr_VAS'
+    # Four types: ECG_EMG: 使用ECG與EMG特徵
+    #               ECG:  只使用ECG特徵
+    #               EMG:  只使用EMG特徵
+    #               Corr_VAS: 透過VAS問卷結果中，選擇有顯著相關的特徵
+
+    label_style = 'multiclass'
+    # Three types: binary: 二元分類, 0: 無壓力 (Baseline situations), 1: 有壓力 (Stroop、算數、演講測驗)
+    #               multiclass: 多元分類,  0: 無壓力 (Baseline), 1: Stroop, 2: 算數, 3: 演講測驗
+    #               VAS_int: 迴歸
+
+    # -------------
 
     '''Label Data'''
-    df = pd.read_excel('Data/Features/220912_Features.xlsx')
+    df = pd.read_excel(inputfile_url)
     df = df.dropna()
-    df = df[df['Mean']!=0]
+    df = df[df['Mean'] != 0]
 
     # 讀取Data
     classify_columns = ['Baseline', 'Stroop', 'Arithmetic', 'Speech']
     # plt_columns=['No stress','Stress']
-    plt_columns=['No stress','Stroop', 'Arith', 'Speech']
-
-
-    # Select features
-    select_features = 'Corr_VAS'  # Four types: ECG_EMG, ECG, EMG, Corr_VAS
-
-    label_style = 'multiclass' # Three types: binary, multiclass, VAS_int
-
-
-
+    plt_columns = ['No stress', 'Stroop', 'Arith', 'Speech']
     label_column = 'Y_Label'
-    df = df[df['Situation'].isin(classify_columns)] # Filter data by classify_columns
-    df = label_stress(df, label_style=label_style) # Label answer by label_style
 
-
+    df = df[df['Situation'].isin(classify_columns)]  # Filter data by classify_columns
+    df = label_stress(df, label_style=label_style)  # Label answer by label_style
     y = df['Y_Label']
 
     # Resample
+    if is_resample:
+        df_nostress = df[df.Y_Label == 0]
+        df_stress = df[df.Y_Label == 1]
+        df_stress_upsampled = resample(df_stress,
+                                         replace=True,     # sample with replacement
+                                         n_samples=len(df_nostress),    # to match majority class
+                                         random_state=42)  # reproducible results
+        df_upsampled = pd.concat([df_nostress, df_stress_upsampled])
+        df = df_upsampled
 
-    # df_nostress = df[df.Y_Label==0]
-    # df_stress = df[df.Y_Label==1]
-    # df_stress_upsampled = resample(df_stress,
-    #                                  replace=True,     # sample with replacement
-    #                                  n_samples=len(df_nostress),    # to match majority class
-    #                                  random_state=42) # reproducible results
-    # df_upsampled = pd.concat([df_nostress, df_stress_upsampled])
-    # df = df_upsampled
-
-
-    #%%
-
-    # 選特徵
-    #ECG+EMG
+    # Feature selection
     if select_features == 'ECG_EMG':
 
         Title = 'ECG and EMG features '
-        select_features = ['Mean','SD', 'RMSSD','NN50', 'Skewness','Kurtosis',
+        select_features = ['Mean', 'SD', 'RMSSD', 'NN50', 'Skewness', 'Kurtosis',
                     'EMG_RMS', 'EMG_ENERGY', 'EMG_VAR', 'EMG_ZC',
                     'TP', 'LF', 'VLF', 'nLF', 'nHF', 'LF/HF', 'MNF', 'MDF']
-    # ECG參數
+
     elif select_features == 'ECG':
         Title = 'ECG features '
-        select_features = ['Mean','SD', 'RMSSD','NN50', 'Skewness','Kurtosis',
+        select_features = ['Mean', 'SD', 'RMSSD', 'NN50', 'Skewness', 'Kurtosis',
                     'TP', 'LF', 'VLF', 'nLF', 'nHF', 'LF/HF']
 
-    # EMG參數
     elif select_features == 'EMG':
         Title = 'EMG features '
         select_features = ['EMG_RMS','EMG_RMS', 'EMG_ENERGY', 'EMG_VAR', 'EMG_ZC', 'MNF', 'MDF']
 
-    # Corr with VAS
     elif select_features == 'Corr_VAS':
         # 與VAS問卷有顯著相關的特徵
         Title = 'Significant correlation’s features'
@@ -333,296 +336,290 @@ if __name__ == '__main__':
     # SFS選特徵 (特徵=6)
     # select_features = ['NN50', 'pNN50', 'EMG_RMS', 'EMG_MAV', 'EMG_VAR', 'MNF'] #knn=6 select
 
+    model, accuracy, y_pred, y_train_pred, accuracy_train, accuracy_valid = None, None, None, None, None, None
 
 
     #%% Check distributio of raw data
-
     # Scatter plot
-
-    # sns.set(style='whitegrid', context='notebook')
-    # cols = ['Mean','SD', 'RMSSD','NN50', 'Skewness','Kurtosis', 'Y_Label']
-    # cols = ['EMG_RMS','EMG_ENERGY', 'EMG_VAR', 'EMG_ZC', 'Y_Label']
-    # cols = [ 'TP', 'LF', 'VLF', 'nLF', 'nHF', 'LF/HF', 'Y_Label']
-    # cols = ['MNF', 'MDF', 'Y_Label']
-    # sns.pairplot(df[cols], size=2.5)
-    # plt.show()
+    sns.set(style='whitegrid', context='notebook')
+    cols = ['Mean', 'SD', 'RMSSD', 'NN50', 'Skewness', 'Kurtosis', 'Y_Label']
+    cols = ['EMG_RMS', 'EMG_ENERGY', 'EMG_VAR', 'EMG_ZC', 'Y_Label']
+    cols = ['TP', 'LF', 'VLF', 'nLF', 'nHF', 'LF/HF', 'Y_Label']
+    cols = ['MNF', 'MDF', 'Y_Label']
+    sns.pairplot(df[cols], size=2.5)
+    plt.show()
 
     # Pearson correlation to Heatmap Plot
+    plt.figure(figsize=(16, 16))
+    heatmap = sns.heatmap(df[select_features].corr(), vmin=-1, vmax=1, annot=True)
+    heatmap.set_title('Correlation Heatmap', fontdict={'fontsize':12}, pad=12);
+    sns.reset_orig()
 
-    # plt.figure(figsize=(16, 16))
-    # heatmap = sns.heatmap(df[select_features].corr(), vmin=-1, vmax=1, annot=True)
-    # heatmap.set_title('Correlation Heatmap', fontdict={'fontsize':12}, pad=12);
-    # sns.reset_orig()
 
-    #%%
-
-    # Model training
+    '''Model training'''
     filterfeatures = df.loc[:, select_features].values
 
     X_train, X_valid, y_train, y_valid = train_test_split(filterfeatures, y, test_size=0.20, random_state=123, stratify=df[label_column])  # stratify: 設定Valid data資料狀況平衡
 
-    model, accuracy, y_pred, y_train_pred = random_forest(X_train, y_train, X_valid, y_valid, 100)
-    # forest_model, accuracy_train, accuracy_valid, y_train_pred, y_pred  = random_forest_regression(X_train, y_train, X_valid, y_valid)
-    # accuracy, y_pred = svr(X_train, y_train, X_valid, y_valid, kernel_style='linear')
-    # accuracy, y_pred = xgb_regression(X_train, y_train, X_valid, y_valid)
-    # y_train_pred, y_pred  = decision_tree_regression(X_train, y_train, X_valid, y_valid, 3)
+    if label_style == 'binary':
+        model, accuracy, y_pred, y_train_pred = random_forest(X_train, y_train, X_valid, y_valid, 100)
+        # accuracy, y_pred = svr(X_train, y_train, X_valid, y_valid, kernel_style='linear')
+        # accuracy, y_pred = xgb_regression(X_train, y_train, X_valid, y_valid)
+    elif label_style == 'VAS_int':
+        model, accuracy_train, accuracy_valid, y_train_pred, y_pred = random_forest_regression(X_train, y_train, X_valid, y_valid)
+        # y_train_pred, y_pred = decision_tree_regression(X_train, y_train, X_valid, y_valid, 3)
 
 
+    '''Model preformance'''
 
-    #%%Model preformance
-    ''' -------- Binary Label ------------'''
+    ''' --- Binary Label ----'''
+    if label_style == 'binary':
 
-    '''Confusion Matrix'''
-    # y_valid = y_valid.astype(int)
-    # y_pred = y_pred.astype(int)
-    # nunique_labels = len(set(y_train))
-    # conf_mat_shape = (nunique_labels, nunique_labels)
-    # confusion_matrix_binary = np.zeros(conf_mat_shape, dtype=int)
-    # for actual, predict in zip(y_valid, y_pred):
-    #   confusion_matrix_binary[actual, predict] += 1
+        ## Confusion Matrix
+        y_valid = y_valid.astype(int)
+        y_pred = y_pred.astype(int)
+        nunique_labels = len(set(y_train))
+        conf_mat_shape = (nunique_labels, nunique_labels)
+        confusion_matrix_binary = np.zeros(conf_mat_shape, dtype=int)
+        for actual, predict in zip(y_valid, y_pred):
+            confusion_matrix_binary[actual, predict] += 1
 
-    # plt.figure(figsize=(4,4))
-    # plt.rcParams["font.family"] = "Arial"
-    # # ax = sns.heatmap(confusion_matrix_binary, annot=True, fmt='.20g', cmap='Blues', annot_kws={'fontsize': 16}) # 個數
-    # ax = sns.heatmap(confusion_matrix_binary/np.sum(confusion_matrix_binary), annot=True,
-    #                     fmt='.2%', cmap='Greys', annot_kws={'fontsize': 20}, vmin=0, vmax=0.8) # 比例
-    # ax.set_title(Title+'\n', fontsize=20);
-    # ax.set_xlabel('\nPredicted Values\n', fontsize=20)
-    # ax.set_ylabel('Actual Values\n', fontsize=20);
-    # ax.xaxis.set_ticklabels(plt_columns, fontsize=16)
-    # ax.yaxis.set_ticklabels(plt_columns, fontsize=16)
-    # plt.tight_layout()
-    # plt.savefig(Title+'_'+label_style+'_Confu.png', dpi=300)
-
-    ''' Preformance: Sensitivity, specificity, Precision, F1, Kappa'''
-    # total1=sum(sum(confusion_matrix_binary))
-    # sensitivity = confusion_matrix_binary[1,1]/(confusion_matrix_binary[1,0]+confusion_matrix_binary[1,1])
-    # specificity = confusion_matrix_binary[0,0]/(confusion_matrix_binary[0,0]+confusion_matrix_binary[0,1])
-    # precision = confusion_matrix_binary[1,1]/(confusion_matrix_binary[1,1]+confusion_matrix_binary[0,1])
-    # F1score = 2 * (precision * sensitivity) / (precision + sensitivity)
-    # kappa = cohen_kappa_score(y_valid, y_pred)
+        # plt.figure(figsize=(4, 4))
+        # plt.rcParams["font.family"] = "Arial"
+        # ax = sns.heatmap(confusion_matrix_binary/np.sum(confusion_matrix_binary), annot=True,
+        #                     fmt='.2%', cmap='Greys', annot_kws={'fontsize': 20}, vmin=0, vmax=0.8) # 比例
+        # ax.set_title(Title+'\n', fontsize=20);
+        # ax.set_xlabel('\nPredicted Values\n', fontsize=20)
+        # ax.set_ylabel('Actual Values\n', fontsize=20);
+        # ax.xaxis.set_ticklabels(plt_columns, fontsize=16)
+        # ax.yaxis.set_ticklabels(plt_columns, fontsize=16)
+        # plt.tight_layout()
+        # plt.savefig(Title+'_'+label_style+'_Confu.png', dpi=300)
 
 
-    '''AUC and ROC curve'''
-    # prob = model.predict_proba(X_valid)
-    # prob = prob[:, 1]
-    # fpr, tpr, thresholds = roc_curve(y_valid, prob)
-    # auc = metrics.auc(fpr, tpr)
-
-    # plt.figure(figsize=(4,4))
-    # plt.rcParams["font.family"] = "Arial"
-    # plt.plot(fpr, tpr, color='black')
-    # plt.plot([0, 1], [0, 1], color='black', linestyle='--')
-    # plt.xlabel('False Positive Rate', fontsize=20)
-    # plt.ylabel('True Positive Rate', fontsize=20)
-    # plt.title(Title+'\n', fontsize=20)
-    # plt.xticks(np.linspace(0,1,3), fontsize=18)
-    # plt.yticks(np.linspace(0,1,3), fontsize=18)
-    # plt.xlim(0,1)
-    # plt.ylim(0,1)
-    # plt.tight_layout()
-    # plt.show()
-    # plt.savefig(Title+'_'+label_style+'_ROC.png', dpi=300)
-
-    # '''Print result'''
-    # print('')
-    # print(confusion_matrix)
-    # print('Accuracy = %0.2f' %accuracy)
-    # print('Sensitivity = %0.2f' % sensitivity)
-    # # print('Specificity = %0.2f' % specificity)
-    # print('Precision = %0.2f' % precision)
-    # print('F1score = %0.2f' % F1score)
-    # print('Kappa = %0.2f' % kappa)
-    # print('AUC = %0.2f' % auc)
+        ## Sensitivity, specificity, Precision, F1, Kappa'''
+        total1 = sum(sum(confusion_matrix_binary))
+        sensitivity = confusion_matrix_binary[1, 1]/(confusion_matrix_binary[1, 0]+confusion_matrix_binary[1, 1])
+        specificity = confusion_matrix_binary[0, 0]/(confusion_matrix_binary[0, 0]+confusion_matrix_binary[0, 1])
+        precision = confusion_matrix_binary[1, 1]/(confusion_matrix_binary[1, 1]+confusion_matrix_binary[0, 1])
+        F1score = 2 * (precision * sensitivity) / (precision + sensitivity)
+        kappa = cohen_kappa_score(y_valid, y_pred)
 
 
+        ## AUC and ROC curve
+        prob = model.predict_proba(X_valid)
+        prob = prob[:, 1]
+        fpr, tpr, thresholds = roc_curve(y_valid, prob)
+        auc = metrics.auc(fpr, tpr)
 
-    ''' ------------- Muticlass Label -------------'''
-
-    '''Preformance: Sensitivity, Precision, kappa, F1'''
-    sensitivity = recall_score(y_valid, y_pred, average=None)
-    precision = precision_score(y_valid, y_pred, average=None)
-    F1score = f1_score(y_valid, y_pred, average=None)
-    df_result = pd.DataFrame({'sensitivity':np.around(sensitivity, decimals=2) ,'precision':np.around(precision, decimals=2), 'F1score': np.around(F1score, decimals=2)})
-
-    kappa = cohen_kappa_score(y_valid, y_pred)
-    df_result = df_result.append({'accuracy':round(accuracy,2) ,'kappa': round(kappa,2), 'sensitivity':round(np.mean(sensitivity),2) ,'precision':round(np.mean(precision),2), 'F1score': round(np.mean(F1score),2)}, ignore_index=True)
-
-
-    '''Confusion matrix'''
-    confusion_matrix_multi = confusion_matrix(y_valid, y_pred)
-    plt.figure(figsize=(5,5))
-    plt.rcParams["font.family"] = "Arial"
-    ax = sns.heatmap(confusion_matrix_multi/np.sum(confusion_matrix_multi), annot=True,
-                        fmt='.2%', cmap='Greys', annot_kws={'fontsize': 16}, vmin=0, vmax=0.16) # Rate
-    ax.set_title(Title+'\n', fontsize=20);
-    ax.set_xlabel('Predicted Values\n', fontsize=16)
-    ax.set_ylabel('Actual Values\n', fontsize=16)
-    ax.xaxis.set_ticklabels(plt_columns, fontsize=14)
-    ax.yaxis.set_ticklabels(plt_columns, fontsize=14)
-    plt.tight_layout()
-    plt.show()
-    plt.savefig(Title+'_'+label_style+'_Confusion.png', dpi=300)
-
-    '''AUC and ROC curve'''
-
-    auc_list = []
-
-    n_classes = 4
-    fpr = dict()
-    tpr = dict()
-    auc = dict()
-    prob = model.predict_proba(X_valid)
-    y_valid_dummies = pd.get_dummies(y_valid, drop_first=False).values
-    for i in range(n_classes):
-        fpr[i], tpr[i], _ = roc_curve(y_valid_dummies[:, i], prob[:, i])
-        auc[i] = metrics.auc(fpr[i], tpr[i])
-
-    color = ['black', 'dimgray', 'darkgrey', 'lightgrey']
-    plt.figure(figsize=(4,4))
-    for i in range(n_classes):
-
-        auc_list.append(round(auc[i],2))
-
-        plt.plot(fpr[i], tpr[i], label=plt_columns[i], color=color[i])
+        plt.figure(figsize=(4,4))
         plt.rcParams["font.family"] = "Arial"
-        plt.plot([0, 1], [0, 1], 'k--')
-        plt.xlim([0, 1])
-        plt.ylim([0, 1])
+        plt.plot(fpr, tpr, color='black')
+        plt.plot([0, 1], [0, 1], color='black', linestyle='--')
         plt.xlabel('False Positive Rate', fontsize=20)
         plt.ylabel('True Positive Rate', fontsize=20)
+        plt.title(Title+'\n', fontsize=20)
         plt.xticks(np.linspace(0,1,3), fontsize=18)
         plt.yticks(np.linspace(0,1,3), fontsize=18)
+        plt.xlim(0,1)
+        plt.ylim(0,1)
+        plt.tight_layout()
+        plt.show()
+        plt.savefig(Title+'_'+label_style+'_ROC.png', dpi=300)
+
+        ## Print result
+        print('')
+        print(confusion_matrix)
+        print('Accuracy = %0.2f' %accuracy)
+        print('Sensitivity = %0.2f' % sensitivity)
+        # print('Specificity = %0.2f' % specificity)
+        print('Precision = %0.2f' % precision)
+        print('F1score = %0.2f' % F1score)
+        print('Kappa = %0.2f' % kappa)
+        print('AUC = %0.2f' % auc)
+
+
+    elif label_style == 'multiclass':
+
+        ## Sensitivity, Precision, kappa, F1
+        sensitivity = recall_score(y_valid, y_pred, average=None)
+        precision = precision_score(y_valid, y_pred, average=None)
+        F1score = f1_score(y_valid, y_pred, average=None)
+        df_result = pd.DataFrame({'sensitivity': np.around(sensitivity, decimals=2), 'precision': np.around(precision, decimals=2), 'F1score': np.around(F1score, decimals=2)})
+
+        kappa = cohen_kappa_score(y_valid, y_pred)
+        df_result = df_result.append({'accuracy': round(accuracy, 2), 'kappa': round(kappa, 2), 'sensitivity': round(np.mean(sensitivity), 2), 'precision': round(np.mean(precision), 2), 'F1score': round(np.mean(F1score), 2)}, ignore_index=True)
+
+
+        ## Confusion matrix
+        confusion_matrix_multi = confusion_matrix(y_valid, y_pred)
+        plt.figure(figsize=(5, 5))
+        plt.rcParams["font.family"] = "Arial"
+        ax = sns.heatmap(confusion_matrix_multi/np.sum(confusion_matrix_multi), annot=True,
+                            fmt='.2%', cmap='Greys', annot_kws={'fontsize': 16}, vmin=0, vmax=0.16)
+        ax.set_title(Title+'\n', fontsize=20)
+        ax.set_xlabel('Predicted Values\n', fontsize=16)
+        ax.set_ylabel('Actual Values\n', fontsize=16)
+        ax.xaxis.set_ticklabels(plt_columns, fontsize=14)
+        ax.yaxis.set_ticklabels(plt_columns, fontsize=14)
+        plt.tight_layout()
+        plt.show()
+        plt.savefig(Title+'_'+label_style+'_Confusion.png', dpi=300)
+
+        ## AUC and ROC curve
+        auc_list = []
+        n_classes = 4
+        fpr = dict()
+        tpr = dict()
+        auc = dict()
+        prob = model.predict_proba(X_valid)
+        y_valid_dummies = pd.get_dummies(y_valid, drop_first=False).values
+        for i in range(n_classes):
+            fpr[i], tpr[i], _ = roc_curve(y_valid_dummies[:, i], prob[:, i])
+            auc[i] = metrics.auc(fpr[i], tpr[i])
+
+        color = ['black', 'dimgray', 'darkgrey', 'lightgrey']
+        plt.figure(figsize=(4, 4))
+        for i in range(n_classes):
+
+            auc_list.append(round(auc[i],2))
+
+            plt.plot(fpr[i], tpr[i], label=plt_columns[i], color=color[i])
+            plt.rcParams["font.family"] = "Arial"
+            plt.plot([0, 1], [0, 1], 'k--')
+            plt.xlim([0, 1])
+            plt.ylim([0, 1])
+            plt.xlabel('False Positive Rate', fontsize=20)
+            plt.ylabel('True Positive Rate', fontsize=20)
+            plt.xticks(np.linspace(0,1,3), fontsize=18)
+            plt.yticks(np.linspace(0,1,3), fontsize=18)
+            plt.title(Title+'\n', fontsize=20)
+            plt.legend(loc="lower right")
+
+        plt.show()
+        plt.tight_layout()
+        plt.savefig(Title+'_'+label_style+'_ROC.png', dpi=300)
+
+        auc_list.append(np.mean(auc_list))
+        df_result['AUC'] = auc_list
+
+        # Output preformance
+        df_result = df_result[['accuracy', 'kappa', 'sensitivity', 'precision', 'F1score', 'AUC']]
+        # df_result.to_excel('Data/{}.xlsx'.format(Title))
+
+
+    if label_style == 'VAS_int':
+
+        '''Correlation between predict and true data'''
+        train_r, train_p = spearmon_corr(y_train_pred, y_train)
+        test_r, test_p = spearmon_corr(y_pred, y_valid)
+
+        print("Trainning data: r {}, p {}".format(round(train_r,2), round(train_p,2)))
+        print("Test data: r {}, p {}".format(round(test_r,2), round(test_p,2)))
+
+        # Preformance: AC, MSE, R2
+        print('Training Accuracy: {}'.format(round(accuracy_train,2)))
+        print('Valid Accuracy: {}'.format(round(accuracy_valid,2)))
+
+        mse_train = mean_squared_error(y_train_pred, y_train)
+        mse_valid = mean_squared_error(y_pred, y_valid)
+
+        print('Training data MSE: {}'.format(round(mse_train,2)))
+        print('Validation data MSE: {}'.format(round(mse_valid,2)))
+
+        r2_train = r2_score(y_train_pred, y_train)
+        r2_valid = r2_score(y_valid, y_pred)
+        print('Training data R2: {}'.format(round(r2_train,2)))
+        print('Validation data R2: {}'.format(round(r2_valid,2)))
+
+
+        '''Redius plot'''
+        error_predandvalid = y_pred-np.array(y_valid)
+        error_train = y_train_pred-np.array(y_train)
+
+        # Training data
+        plt.figure(figsize=(4,3))
+        plt.scatter(y_train_pred, error_train, c='black', marker='o')
+        plt.rcParams["font.family"] = "Arial"
+        plt.xlabel('Predictied values', fontsize=18)
+        plt.ylabel('Residuals', fontsize=18)
+        plt.title(Title+'\n', fontsize=18)
+        plt.xticks(range(0, 125, 25), fontsize=18)
+        plt.yticks(range(-100, 150, 50), fontsize=18)
+        plt.ylim(-100, 100)
+        plt.xlim(0, 100)
+        plt.hlines(y=0, xmin=0, xmax=100, color='grey')
+        plt.tight_layout()
+        plt.savefig(Title+'_'+label_style+'_Train_error.png', dpi=200)
+
+        sns.displot(data=error_train,  kde=True, edgecolor="white", color='black', height=3, aspect=1.2)
+        plt.rcParams["font.family"] = "Arial"
+        plt.xlabel('Error', fontsize=18)
+        plt.ylabel('Count', fontsize=18)
+        plt.title(Title+'\n', fontsize=18)
+        plt.yticks(range(0, 250, 50), fontsize=18)
+        plt.xticks(range(-100, 150, 50), fontsize=18)
+        plt.ylim(0,200)
+        plt.xlim(-100,100)
+        plt.tight_layout()
+        plt.savefig(Title+'_'+label_style+'_Train.png', dpi=200)
+
+        # Testing data
+        plt.figure(figsize=(4, 3))
+        plt.rcParams["font.family"] = "Arial"
+        plt.scatter(y_pred, error_predandvalid, c='black', marker='o', label='Validation data')
+        plt.xlabel('Predictied values', fontsize=18)
+        plt.ylabel('Residuals', fontsize=18)
         plt.title(Title+'\n', fontsize=20)
-        plt.legend(loc="lower right")
+        plt.xticks(range(0, 125, 25), fontsize=18)
+        plt.yticks(range(-100, 150, 50), fontsize=18)
+        plt.ylim(-100,100)
+        plt.xlim(0,100)
+        plt.hlines(y=0, xmin=0, xmax=100, color='grey')
+        plt.tight_layout()
+        plt.savefig(Title+'_'+label_style+'_Test_error.png', dpi=200)
 
-    plt.show()
-    plt.tight_layout()
-    plt.savefig(Title+'_'+label_style+'_ROC.png', dpi=300)
-
-    auc_list.append(np.mean(auc_list))
-    df_result['AUC']=auc_list
-
-    # Output preformance
-    df_result = df_result[['accuracy', 'kappa', 'sensitivity', 'precision', 'F1score', 'AUC']]
-    # df_result.to_excel('Data/{}.xlsx'.format(Title))
-
-
-
-    '''--------------Regression Model------------'''
-
-    '''Correlation between predict and true data'''
-    # train_r, train_p = spearmon_corr(y_train_pred, y_train)
-    # test_r, test_p = spearmon_corr(y_pred, y_valid)
-
-    # print("Trainning data: r {}, p {}".format(round(train_r,2), round(train_p,2)))
-    # print("Test data: r {}, p {}".format(round(test_r,2), round(test_p,2)))
-
-    # '''Preformance: AC, MSE, R2 '''
-    # print('Training Accuracy: {}'.format(round(accuracy_train,2)))
-    # print('Valid Accuracy: {}'.format(round(accuracy_valid,2)))
-
-    # mse_train = mean_squared_error(y_train_pred, y_train)
-    # mse_valid = mean_squared_error(y_pred, y_valid)
+        sns.displot(data=error_predandvalid,  kde=True, edgecolor="white", color='black', height=3, aspect=1.2)
+        plt.rcParams["font.family"] = "Arial"
+        plt.xlabel('Error', fontsize=18)
+        plt.ylabel('Count', fontsize=18)
+        plt.title(Title+'\n', fontsize=18)
+        plt.yticks(range(0, 100, 20), fontsize=18)
+        plt.xticks(range(-100, 150, 50), fontsize=18)
+        plt.ylim(0,80)
+        plt.xlim(-100,100)
+        plt.tight_layout()
+        plt.savefig(Title+'_'+label_style+'_Test.png', dpi=200)
 
 
-    # print('Training data MSE: {}'.format(round(mse_train,2)))
-    # print('Validation data MSE: {}'.format(round(mse_valid,2)))
-
-    # r2_train = r2_score(y_train_pred, y_train)
-    # r2_valid = r2_score(y_valid, y_pred)
-    # print('Training data R2: {}'.format(round(r2_train,2)))
-    # print('Validation data R2: {}'.format(round(r2_valid,2)))
-
-
-    '''Redius plot'''
-    # error_predandvalid = y_pred-np.array(y_valid)
-    # error_train = y_train_pred-np.array(y_train)
-
-    # Training data
-    # plt.figure(figsize=(4,3))
-    # plt.scatter(y_train_pred, error_train, c='black', marker='o')
-    # plt.rcParams["font.family"] = "Arial"
-    # plt.xlabel('Predictied values', fontsize=18)
-    # plt.ylabel('Residuals', fontsize=18)
-    # plt.title(Title+'\n', fontsize=18)
-    # plt.xticks(range(0, 125, 25), fontsize=18)
-    # plt.yticks(range(-100, 150, 50), fontsize=18)
-    # plt.ylim(-100,100)
-    # plt.xlim(0,100)
-    # plt.hlines(y=0, xmin=0, xmax=100, color='grey')
-    # plt.tight_layout()
-    # plt.savefig(Title+'_'+label_style+'_Train_error.png', dpi=200)
-
-    # sns.displot(data=error_train,  kde=True, edgecolor="white", color='black', height=3, aspect=1.2)
-    # plt.rcParams["font.family"] = "Arial"
-    # plt.xlabel('Error', fontsize=18)
-    # plt.ylabel('Count', fontsize=18)
-    # plt.title(Title+'\n', fontsize=18)
-    # plt.yticks(range(0, 250, 50), fontsize=18)
-    # plt.xticks(range(-100, 150, 50), fontsize=18)
-    # plt.ylim(0,200)
-    # plt.xlim(-100,100)
-    # plt.tight_layout()
-    # plt.savefig(Title+'_'+label_style+'_Train.png', dpi=200)
-
-    # # Testing data
-    # plt.figure(figsize=(4,3))
-    # plt.rcParams["font.family"] = "Arial"
-    # plt.scatter(y_pred, error_predandvalid, c='black', marker='o', label='Validation data')
-    # plt.xlabel('Predictied values', fontsize=18)
-    # plt.ylabel('Residuals', fontsize=18)
-    # plt.title(Title+'\n', fontsize=20)
-    # plt.xticks(range(0, 125, 25), fontsize=18)
-    # plt.yticks(range(-100, 150, 50), fontsize=18)
-    # plt.ylim(-100,100)
-    # plt.xlim(0,100)
-    # plt.hlines(y=0, xmin=0, xmax=100, color='grey')
-    # plt.tight_layout()
-    # plt.savefig(Title+'_'+label_style+'_Test_error.png', dpi=200)
-
-    # sns.displot(data=error_predandvalid,  kde=True, edgecolor="white", color='black', height=3, aspect=1.2)
-    # plt.rcParams["font.family"] = "Arial"
-    # plt.xlabel('Error', fontsize=18)
-    # plt.ylabel('Count', fontsize=18)
-    # plt.title(Title+'\n', fontsize=18)
-    # plt.yticks(range(0, 100, 20), fontsize=18)
-    # plt.xticks(range(-100, 150, 50), fontsize=18)
-    # plt.ylim(0,80)
-    # plt.xlim(-100,100)
-    # plt.tight_layout()
-    # plt.savefig(Title+'_'+label_style+'_Test.png', dpi=200)
+        '''Bland Altman'''
+        f, ax = plt.subplots(1, figsize = (6,4))
+        sm.graphics.mean_diff_plot(y_pred,y_valid, ax = ax, scatter_kwds={"color": "black"})
+        ax.set_title(Title, fontsize=20)
+        ax.set_ylim(-100, 100)
+        ax.set_xlim(0, 100)
+        ax.set_xlabel('Predictied values', fontsize=18)
+        ax.set_ylabel('Difference', fontsize=18)
+        plt.xticks(fontsize=14)
+        plt.yticks(fontsize=14)
+        plt.tight_layout()
+        plt.rcParams["font.family"] = "Arial"
+        plt.show()
+        plt.savefig(Title+'_'+label_style+'_Train_BA.png', dpi=200)
 
 
-    '''Bland Altman'''
-    # f, ax = plt.subplots(1, figsize = (6,4))
-    # sm.graphics.mean_diff_plot(y_pred,y_valid, ax = ax, scatter_kwds={"color": "black"})
-    # ax.set_title(Title, fontsize=20)
-    # ax.set_ylim(-100, 100)
-    # ax.set_xlim(0, 100)
-    # ax.set_xlabel('Predictied values', fontsize=18)
-    # ax.set_ylabel('Difference', fontsize=18)
-    # plt.xticks(fontsize=14)
-    # plt.yticks(fontsize=14)
-    # plt.tight_layout()
-    # plt.rcParams["font.family"] = "Arial"
-    # plt.show()
-    # plt.savefig(Title+'_'+label_style+'_Train_BA.png', dpi=200)
-
-
-    # f, ax = plt.subplots(1, figsize = (6,4))
-    # sm.graphics.mean_diff_plot(y_train_pred,y_train, ax = ax, scatter_kwds={"color": "black"})
-    # ax.set_title(Title, fontsize=20)
-    # ax.set_ylim(-100, 100)
-    # ax.set_xlim(0, 100)
-    # ax.set_xlabel('Mean', fontsize=18)
-    # ax.set_ylabel('Difference', fontsize=18)
-    # plt.xticks(fontsize=14)
-    # plt.yticks(fontsize=14)
-    # plt.tight_layout()
-    # plt.rcParams["font.family"] = "Arial"
-    # plt.show()
-    # plt.savefig(Title+'_'+label_style+'_Test_BA.png', dpi=200)
-
+        f, ax = plt.subplots(1, figsize=(6, 4))
+        sm.graphics.mean_diff_plot(y_train_pred,y_train, ax=ax, scatter_kwds={"color": "black"})
+        ax.set_title(Title, fontsize=20)
+        ax.set_ylim(-100, 100)
+        ax.set_xlim(0, 100)
+        ax.set_xlabel('Mean', fontsize=18)
+        ax.set_ylabel('Difference', fontsize=18)
+        plt.xticks(fontsize=14)
+        plt.yticks(fontsize=14)
+        plt.tight_layout()
+        plt.rcParams["font.family"] = "Arial"
+        plt.show()
+        plt.savefig(Title+'_'+label_style+'_Test_BA.png', dpi=200)
 
 

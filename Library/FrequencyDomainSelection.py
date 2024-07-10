@@ -8,12 +8,12 @@ Created on Tue Jul 26 14:01:57 2022
 
 import pandas as pd
 import numpy as np
-import def_getRpeak_main as getRpeak
+import Library.def_getRpeak_main as getRpeak
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d  # 導入 scipy 中的一維插值工具 interp1d
 import scipy.fft
 import transfer_rawdata_tocsv
-import def_measureSQI as measureSQI
+import Library.def_measureSQI as measureSQI
 
 def interpolate(signal, output_signal_len):   # signal:原始訊號, output_signal_len:產生為多少長度之訊號
     x = np.linspace(0, len(signal)-1, num=len(signal), endpoint=True)
